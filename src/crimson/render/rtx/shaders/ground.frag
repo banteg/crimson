@@ -21,7 +21,7 @@ uniform sampler2D u_substrate_tex; // Terrain and non-blood decals, without a se
 uniform sampler2D u_light_tiles;
 uniform ivec2 u_light_tile_size; // tile grid dimensions, zero when no host supplied a mask
 uniform sampler2D u_material_tex; // Ordered RGBA coverage: blood, corpse, brass, ice
-uniform sampler2D u_normal_tex;   // Precomputed vec4(slope_sub.xy, slope_fluid.xy)
+uniform sampler2D u_normal_tex;   // Compact per-texel (substrate height, exposed blood amount)
 #endif
 
 uniform vec2 u_ground_size;
@@ -104,12 +104,31 @@ void main() {
     float wet_film  = smoothstep(0.04, 0.36, clamp(blood_amount * 1.65, 0.0, 1.0));
     float deep_pool = smoothstep(0.12, 0.95, blood_amount);
 
-    // DUAL-NORMAL LAYERED FLUID MODEL (precomputed slopes in u_normal_tex):
-    // (A) Substrate Normal N_sub (drives DIFFUSE lighting ONLY)
-    // (B) Top-Surface Fluid Normal N_fluid (drives DIELECTRIC SPECULAR ONLY)
-    vec4 slopes = texture(u_normal_tex, ground_uv);
-    vec3 N_sub = normalize(vec3(slopes.xy, 1.0));
-    vec3 N_fluid = normalize(vec3(slopes.zw, 1.0));
+    // DUAL-NORMAL LAYERED FLUID MODEL (8-tap stencil on compact RG16F height+blood map):
+    vec2 step_fine = vec2(1.2, 1.2 * V_UP) / u_ground_size;
+    vec2 step_med  = vec2(3.2, 3.2 * V_UP) / u_ground_size;
+    vec2 rL1 = texture(u_normal_tex, ground_uv + vec2(-step_fine.x, 0.0)).rg;
+    vec2 rR1 = texture(u_normal_tex, ground_uv + vec2( step_fine.x, 0.0)).rg;
+    vec2 rD1 = texture(u_normal_tex, ground_uv + vec2(0.0, -step_fine.y)).rg;
+    vec2 rU1 = texture(u_normal_tex, ground_uv + vec2(0.0,  step_fine.y)).rg;
+    vec2 rL2 = texture(u_normal_tex, ground_uv + vec2(-step_med.x, 0.0)).rg;
+    vec2 rR2 = texture(u_normal_tex, ground_uv + vec2( step_med.x, 0.0)).rg;
+    vec2 rD2 = texture(u_normal_tex, ground_uv + vec2(0.0, -step_med.y)).rg;
+    vec2 rU2 = texture(u_normal_tex, ground_uv + vec2(0.0,  step_med.y)).rg;
+
+    vec2 dH_fine  = vec2(rL1.x - rR1.x, rU1.x - rD1.x) * 1.35;
+    vec2 dH_macro = vec2(rL2.x - rR2.x, rU2.x - rD2.x) * 1.15;
+    vec2 slope_sub = dH_fine + dH_macro * 0.85;
+    vec3 N_sub = normalize(vec3(slope_sub.x, slope_sub.y, 1.0));
+
+    float poolL = smoothstep(0.12, 0.95, 0.45 * rL1.y + 0.55 * rL2.y);
+    float poolR = smoothstep(0.12, 0.95, 0.45 * rR1.y + 0.55 * rR2.y);
+    float poolD = smoothstep(0.12, 0.95, 0.45 * rD1.y + 0.55 * rD2.y);
+    float poolU = smoothstep(0.12, 0.95, 0.45 * rU1.y + 0.55 * rU2.y);
+    vec2 dPool_smooth = vec2(poolL - poolR, poolU - poolD) * (1.0 - 0.65 * deep_pool);
+
+    vec2 slope_fluid = dH_macro * mix(1.35, 0.24, deep_pool) + dH_fine * mix(0.45, 0.04, deep_pool) + dPool_smooth * 0.18;
+    vec3 N_fluid = normalize(vec3(slope_fluid.x, slope_fluid.y, 1.0));
 
     // G and B are filtered with identical weights. Their ratio keeps bare thin spray fresh,
     // but only its contribution refreshes an older pool. Epoch rebasing prevents overflow.

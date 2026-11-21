@@ -1009,8 +1009,8 @@ void check_terrain_snapshots() {
   bakes(603, true);
   assert(w2c_host_texture_read(nullptr, 600, 4096, size) == size);
   identical(603);
-  // Scissored dirty-rect normal rebakes keep distant stamps disjoint, exclude
-  // cached normals from copy-size budgeting, and match a full rebake pixel-for-pixel.
+  // Scissored dirty-tile relief rebakes stay area-based even for many separated
+  // stamps, exclude cached relief from copy-size budgeting, and match a full rebake.
   {
     Ground &g = grounds.at(600);
     ground_size[0] = 64;
@@ -1020,10 +1020,16 @@ void check_terrain_snapshots() {
     assert(w2c_host_texture_bytes(nullptr, 600) == 128 * 64 * 28);
     w2c_host_set_render_target(nullptr, 600);
     w2c_host_ground(nullptr, HOST_GROUND_BLOOD, 260);
-    rectangle(2, 2, 10, 10, 0xe0ffffff);
-    rectangle(52, 20, 60, 28, 0xe0ffffff);
+    // 18 small separated stamps stay well below the 50% full-rebake area threshold.
+    for (int i = 0; i < 18; ++i) {
+      float x = 2.f + (i % 6) * 10.f, y = 2.f + (i / 6) * 10.f;
+      rectangle(x, y, x + 2.f, y + 2.f, 0xe0ffffff);
+    }
     w2c_host_ground(nullptr, (u32)HOST_GROUND_END, 0);
-    assert(g.normals_dirty && !g.normals_full && g.dirty_rects.size() == 2);
+    int dirty_tiles = 0;
+    for (uint32_t row : g.dirty_tiles)
+      dirty_tiles += __builtin_popcount(row);
+    assert(g.normals_dirty && !g.normals_full && dirty_tiles > 0 && dirty_tiles < GROUND_DIRTY_GRID * GROUND_DIRTY_GRID / 2);
     update_ground_normals(g);
     std::vector<float> scissored((size_t)g.normals.width * g.normals.height * 4);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, g.normals.framebuffer);

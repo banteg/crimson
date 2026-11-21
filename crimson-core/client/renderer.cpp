@@ -269,7 +269,7 @@ const char *creature_fragment_source = SHADER_HEADER RTX_SHADER_CREATURE_FRAG;
 const char *player_fragment_source = SHADER_HEADER RTX_SHADER_PLAYER_FRAG;
 const char *bonus_fragment_source = SHADER_HEADER RTX_SHADER_BONUS_FRAG;
 const char *ground_fragment_source = SHADER_HEADER SHADER_GROUND_LIT_FRAG;
-const char *ground_normals_fragment_source = SHADER_HEADER SHADER_GROUND_NORMALS_LIT_FRAG;
+const char *ground_normals_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_NORMALS_FRAG;
 const char *ground_beam_vis_source = SHADER_HEADER SHADER_GROUND_BEAM_VIS_FRAG;
 const char *stamp_fragment_source = SHADER_HEADER RTX_SHADER_GROUND_STAMP_FRAG;
 const char *smoke_rect_source = SHADER_HEADER SHADER_SMOKE_RECT_VERT;
@@ -347,16 +347,13 @@ Target pressured;
 // ice); the float surface holds specularity, wetness, blood volume and height.
 // Wetness is stored against an epoch, rebased as the clock runs on. Decal draws
 // marked with a material (host_ground) reach them as they reach the terrain.
-struct DirtyRect {
-  float x0, y0, x1, y1;
-};
+enum { TARGET_RG_HALF_FLOAT = 64, GROUND_DIRTY_GRID = 32 };
 struct Ground {
   Target substrate, coverage, surface, normals;
   float epoch = 0;
-  float normals_size[2] = {};
   bool normals_dirty = true;
   bool normals_full = true;
-  std::vector<DirtyRect> dirty_rects;
+  uint32_t dirty_tiles[GROUND_DIRTY_GRID] = {};
 };
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
@@ -368,8 +365,7 @@ GLuint ground_program, ground_normals_program, stamp_program, fill_program;
 enum { BEAM_VISIBILITY_ROWS = MAX_LIGHTS / 16 };
 GLuint ground_beam_vis_program, beam_vis_framebuffer, beam_vis_texture;
 int beam_vis_width, beam_vis_height;
-GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness,
-    u_normals_ground_size;
+GLint u_stamp_target_size, u_stamp_kind, u_stamp_pass, u_stamp_wetness, u_fill_kind, u_fill_pass, u_fill_wetness;
 // RTX fluid smoke (game/rtx_smoke.cpp, render/rtx/gpu_smoke.py): the field's
 // RGBA16F targets (its state twice, divergence, pressure twice), the solver's
 // settings and passes, and the display's composite at reduced resolution.
@@ -465,6 +461,8 @@ void allocate(Target &t) {
   glBindTexture(GL_TEXTURE_2D, t.texture);
   if (t.flags & TARGET_FLOAT)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, t.width, t.height, 0, GL_RGBA, GL_FLOAT, nullptr);
+  else if (t.flags & TARGET_RG_HALF_FLOAT)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, t.width, t.height, 0, GL_RG, GL_HALF_FLOAT, nullptr);
   else if (t.flags & TARGET_HALF_FLOAT)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, t.width, t.height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
   else
@@ -831,7 +829,7 @@ void drop_ground(int id) {
 void mark_normals_full(Ground &g) {
   g.normals_dirty = true;
   g.normals_full = true;
-  g.dirty_rects.clear();
+  memset(g.dirty_tiles, 0, sizeof g.dirty_tiles);
 }
 
 void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
@@ -839,82 +837,42 @@ void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
     return;
   if (g.normals_dirty && g.normals_full)
     return;
-  DirtyRect next{x0, y0, x1, y1};
-  // Merge overlapping or nearby logical stamp rects so clusters stay one draw
-  // while distant stamps stay separate scissored regions.
-  constexpr float merge_gap = 8.f;
-  bool merged = true;
-  while (merged) {
-    merged = false;
-    for (size_t i = 0; i < g.dirty_rects.size(); ++i) {
-      const DirtyRect &r = g.dirty_rects[i];
-      if (next.x0 <= r.x1 + merge_gap && next.x1 >= r.x0 - merge_gap &&
-          next.y0 <= r.y1 + merge_gap && next.y1 >= r.y0 - merge_gap) {
-        next.x0 = std::min(next.x0, r.x0);
-        next.y0 = std::min(next.y0, r.y0);
-        next.x1 = std::max(next.x1, r.x1);
-        next.y1 = std::max(next.y1, r.y1);
-        g.dirty_rects[i] = g.dirty_rects.back();
-        g.dirty_rects.pop_back();
-        merged = true;
-        break;
-      }
-    }
-  }
-  g.dirty_rects.push_back(next);
+  float lw = (float)std::max(1, g.surface.logical_width);
+  float lh = (float)std::max(1, g.surface.logical_height);
+  // Pad by 2 logical units for Direct3D half-pixel offsets and bilinear edges.
+  int tx0 = std::clamp((int)floorf((x0 - 2.f) * GROUND_DIRTY_GRID / lw), 0, GROUND_DIRTY_GRID - 1);
+  int ty0 = std::clamp((int)floorf((y0 - 2.f) * GROUND_DIRTY_GRID / lh), 0, GROUND_DIRTY_GRID - 1);
+  int tx1 = std::clamp((int)floorf((x1 + 2.f) * GROUND_DIRTY_GRID / lw), 0, GROUND_DIRTY_GRID - 1);
+  int ty1 = std::clamp((int)floorf((y1 + 2.f) * GROUND_DIRTY_GRID / lh), 0, GROUND_DIRTY_GRID - 1);
+  if (tx1 < tx0 || ty1 < ty0)
+    return;
+  uint32_t row_mask = (tx1 - tx0 == GROUND_DIRTY_GRID - 1) ? ~0u : (((1u << (tx1 - tx0 + 1)) - 1u) << tx0);
+  for (int ty = ty0; ty <= ty1; ++ty)
+    g.dirty_tiles[ty] |= row_mask;
   g.normals_dirty = true;
   g.normals_full = false;
-  if (g.dirty_rects.size() > 16)
-    mark_normals_full(g);
 }
 
 void update_ground_normals(Ground &g) {
-  float size[2] = {ground_size[0] > 0 ? ground_size[0] : (float)std::max(1, g.surface.logical_width),
-                   ground_size[1] > 0 ? ground_size[1] : (float)std::max(1, g.surface.logical_height)};
-  int norm_w = std::max(g.surface.width, std::min(4096, (int)ceilf(size[0] * 2.f)));
-  int norm_h = std::max(g.surface.height, std::min(4096, (int)ceilf(size[1] * 2.f)));
-  if (!g.normals.framebuffer || g.normals.width != norm_w || g.normals.height != norm_h) {
+  if (!g.normals.framebuffer || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
     release(g.normals);
-    g.normals.width = norm_w;
-    g.normals.height = norm_h;
+    g.normals.width = g.surface.width;
+    g.normals.height = g.surface.height;
     g.normals.logical_width = g.surface.logical_width;
     g.normals.logical_height = g.surface.logical_height;
-    g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    g.normals.flags = TARGET_RENDER | TARGET_RG_HALF_FLOAT;
     allocate(g.normals);
     mark_normals_full(g);
   }
-  if (g.normals_size[0] != size[0] || g.normals_size[1] != size[1])
-    mark_normals_full(g);
   if (!g.normals_dirty)
     return;
-  struct PixelRect {
-    int x0, y0, x1, y1;
-  };
-  std::vector<PixelRect> pixels;
-  bool full = g.normals_full || g.dirty_rects.empty();
-  if (!full) {
-    float sx = (float)g.normals.width / std::max(1, g.surface.logical_width);
-    float sy = (float)g.normals.height / std::max(1, g.surface.logical_height);
-    int pad_x = (int)ceilf(3.2f * g.normals.width / size[0] + sx) + 3;
-    int pad_y = (int)ceilf(3.2f * g.normals.height / size[1] + sy) + 3;
-    uint64_t area = 0;
-    for (const DirtyRect &r : g.dirty_rects) {
-      int x0 = std::clamp((int)floorf(r.x0 * sx) - pad_x, 0, g.normals.width);
-      int y0 = std::clamp((int)floorf(r.y0 * sy) - pad_y, 0, g.normals.height);
-      int x1 = std::clamp((int)ceilf(r.x1 * sx) + pad_x, 0, g.normals.width);
-      int y1 = std::clamp((int)ceilf(r.y1 * sy) + pad_y, 0, g.normals.height);
-      if (x1 > x0 && y1 > y0) {
-        pixels.push_back({x0, y0, x1, y1});
-        area += (uint64_t)(x1 - x0) * (uint64_t)(y1 - y0);
-      }
-    }
-    if (pixels.empty()) {
-      g.normals_dirty = g.normals_full = false;
-      g.dirty_rects.clear();
-      return;
-    }
-    if (area * 2 >= (uint64_t)g.normals.width * (uint64_t)g.normals.height)
-      full = true;
+  int dirty_count = 0;
+  for (uint32_t row : g.dirty_tiles)
+    dirty_count += __builtin_popcount(row);
+  bool full = g.normals_full || dirty_count * 2 >= GROUND_DIRTY_GRID * GROUND_DIRTY_GRID;
+  if (!full && dirty_count == 0) {
+    g.normals_dirty = false;
+    return;
   }
   gpu_aside("ground-normals");
   bind_framebuffer(g.normals);
@@ -922,7 +880,6 @@ void update_ground_normals(Ground &g) {
   glDisable(GL_CULL_FACE);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   use_program(ground_normals_program);
-  glUniform2fv(u_normals_ground_size, 1, size);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, g.coverage.texture);
   glBindSampler(1, 0);
@@ -935,16 +892,31 @@ void update_ground_normals(Ground &g) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   } else {
     glEnable(GL_SCISSOR_TEST);
-    for (const PixelRect &r : pixels) {
-      glScissor(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
-      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    int w = g.normals.width, h = g.normals.height;
+    for (int ty = 0; ty < GROUND_DIRTY_GRID; ++ty) {
+      uint32_t row = g.dirty_tiles[ty];
+      if (!row)
+        continue;
+      int py0 = ty * h / GROUND_DIRTY_GRID;
+      int py1 = ((ty + 1) * h + GROUND_DIRTY_GRID - 1) / GROUND_DIRTY_GRID;
+      for (int tx = 0; tx < GROUND_DIRTY_GRID; ) {
+        if (!(row & (1u << tx))) {
+          ++tx;
+          continue;
+        }
+        int tx0 = tx;
+        while (tx < GROUND_DIRTY_GRID && (row & (1u << tx)))
+          ++tx;
+        int px0 = tx0 * w / GROUND_DIRTY_GRID;
+        int px1 = (tx * w + GROUND_DIRTY_GRID - 1) / GROUND_DIRTY_GRID;
+        glScissor(px0, py0, px1 - px0, py1 - py0);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+      }
     }
     glDisable(GL_SCISSOR_TEST);
   }
   g.normals_dirty = g.normals_full = false;
-  g.dirty_rects.clear();
-  g.normals_size[0] = size[0];
-  g.normals_size[1] = size[1];
+  memset(g.dirty_tiles, 0, sizeof g.dirty_tiles);
   bind_target();
   gpu_resume();
 }
@@ -1511,7 +1483,6 @@ bool GL_ENTRY(renderer_set_rtx)(bool enabled) {
     use_program(ground_normals_program);
     glUniform1i(uniform_location(ground_normals_program, "u_surface_tex"), 0);
     glUniform1i(uniform_location(ground_normals_program, "u_material_tex"), 1);
-    u_normals_ground_size = uniform_location(ground_normals_program, "u_ground_size");
     ground_beam_vis_program = link(SHADER_HEADER SHADER_GROUND_VISIBILITY_VERT, ground_beam_vis_source);
     stamp_program = link(lit_vertex_source, stamp_fragment_source);
     use_program(stamp_program);

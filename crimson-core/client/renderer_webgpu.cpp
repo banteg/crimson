@@ -73,10 +73,12 @@ WGPUTextureFormat float_format() {
                            wgpuDeviceHasFeature(device, WGPUFeatureName_Float32Blendable);
   return full ? WGPUTextureFormat_RGBA32Float : WGPUTextureFormat_RGBA16Float;
 }
+enum { TARGET_RG_HALF_FLOAT = 64, GROUND_DIRTY_GRID = 32 };
 WGPUTextureFormat format_of(const Target &t) {
-  return t.flags & TARGET_FLOAT        ? float_format()
-         : t.flags & TARGET_HALF_FLOAT ? WGPUTextureFormat_RGBA16Float
-                                       : WGPUTextureFormat_RGBA8Unorm;
+  return t.flags & TARGET_FLOAT          ? float_format()
+         : t.flags & TARGET_RG_HALF_FLOAT ? WGPUTextureFormat_RG16Float
+         : t.flags & TARGET_HALF_FLOAT   ? WGPUTextureFormat_RGBA16Float
+                                         : WGPUTextureFormat_RGBA8Unorm;
 }
 
 // --- Per-frame streams: vertices, indices and uniforms written once each --------
@@ -188,7 +190,7 @@ Program creature_lit{&WGSL_CREATURE_LIT_VERT, &WGSL_CREATURE_FRAG, CENTERED_VERT
 Program player_lit{&WGSL_CREATURE_VERT, &WGSL_PLAYER_FRAG, DEVICE_VERTICES};
 Program bonus_lit{&WGSL_CREATURE_VERT, &WGSL_BONUS_FRAG, DEVICE_VERTICES};
 Program ground_lit{&WGSL_CREATURE_VERT, &WGSL_GROUND_LIT_FRAG, DEVICE_VERTICES};
-Program ground_normals{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_NORMALS_LIT_FRAG, NO_VERTICES};
+Program ground_normals{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_NORMALS_FRAG, NO_VERTICES};
 Program ground_beam_vis{&WGSL_GROUND_VISIBILITY_VERT, &WGSL_GROUND_BEAM_VIS_FRAG, NO_VERTICES};
 Program ground_stamp{&WGSL_CREATURE_VERT, &WGSL_GROUND_STAMP_FRAG, DEVICE_VERTICES};
 Program ground_fill{&WGSL_FULLSCREEN_VERT, &WGSL_GROUND_STAMP_FRAG, NO_VERTICES};
@@ -926,16 +928,12 @@ void bind_classic(const Target &t, WGPUPrimitiveTopology topology) {
 }
 
 // --- The RTX ground (render/rtx/materials.py), as in renderer.cpp -----------------
-struct DirtyRect {
-  float x0, y0, x1, y1;
-};
 struct Ground {
   Target substrate, coverage, surface, normals;
   float epoch = 0;
-  float normals_size[2] = {};
   bool normals_dirty = true;
   bool normals_full = true;
-  std::vector<DirtyRect> dirty_rects;
+  uint32_t dirty_tiles[GROUND_DIRTY_GRID] = {};
 };
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
@@ -955,7 +953,7 @@ void drop_ground(int id) {
 void mark_normals_full(Ground &g) {
   g.normals_dirty = true;
   g.normals_full = true;
-  g.dirty_rects.clear();
+  memset(g.dirty_tiles, 0, sizeof g.dirty_tiles);
 }
 
 void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
@@ -963,107 +961,79 @@ void mark_normals_rect(Ground &g, float x0, float y0, float x1, float y1) {
     return;
   if (g.normals_dirty && g.normals_full)
     return;
-  DirtyRect next{x0, y0, x1, y1};
-  constexpr float merge_gap = 8.f;
-  bool merged = true;
-  while (merged) {
-    merged = false;
-    for (size_t i = 0; i < g.dirty_rects.size(); ++i) {
-      const DirtyRect &r = g.dirty_rects[i];
-      if (next.x0 <= r.x1 + merge_gap && next.x1 >= r.x0 - merge_gap &&
-          next.y0 <= r.y1 + merge_gap && next.y1 >= r.y0 - merge_gap) {
-        next.x0 = std::min(next.x0, r.x0);
-        next.y0 = std::min(next.y0, r.y0);
-        next.x1 = std::max(next.x1, r.x1);
-        next.y1 = std::max(next.y1, r.y1);
-        g.dirty_rects[i] = g.dirty_rects.back();
-        g.dirty_rects.pop_back();
-        merged = true;
-        break;
-      }
-    }
-  }
-  g.dirty_rects.push_back(next);
+  float lw = (float)std::max(1, g.surface.logical_width);
+  float lh = (float)std::max(1, g.surface.logical_height);
+  int tx0 = std::clamp((int)floorf((x0 - 2.f) * GROUND_DIRTY_GRID / lw), 0, GROUND_DIRTY_GRID - 1);
+  int ty0 = std::clamp((int)floorf((y0 - 2.f) * GROUND_DIRTY_GRID / lh), 0, GROUND_DIRTY_GRID - 1);
+  int tx1 = std::clamp((int)floorf((x1 + 2.f) * GROUND_DIRTY_GRID / lw), 0, GROUND_DIRTY_GRID - 1);
+  int ty1 = std::clamp((int)floorf((y1 + 2.f) * GROUND_DIRTY_GRID / lh), 0, GROUND_DIRTY_GRID - 1);
+  if (tx1 < tx0 || ty1 < ty0)
+    return;
+  uint32_t row_mask = (tx1 - tx0 == GROUND_DIRTY_GRID - 1) ? ~0u : (((1u << (tx1 - tx0 + 1)) - 1u) << tx0);
+  for (int ty = ty0; ty <= ty1; ++ty)
+    g.dirty_tiles[ty] |= row_mask;
   g.normals_dirty = true;
   g.normals_full = false;
-  if (g.dirty_rects.size() > 16)
-    mark_normals_full(g);
 }
 
 void update_ground_normals(Ground &g) {
-  float size[2] = {ground_size[0] > 0 ? ground_size[0] : (float)std::max(1, g.surface.logical_width),
-                   ground_size[1] > 0 ? ground_size[1] : (float)std::max(1, g.surface.logical_height)};
-  int norm_w = std::max(g.surface.width, std::min(4096, (int)ceilf(size[0] * 2.f)));
-  int norm_h = std::max(g.surface.height, std::min(4096, (int)ceilf(size[1] * 2.f)));
-  if (!g.normals.texture || g.normals.width != norm_w || g.normals.height != norm_h) {
+  if (!g.normals.texture || g.normals.width != g.surface.width || g.normals.height != g.surface.height) {
     release(g.normals);
-    g.normals.width = norm_w;
-    g.normals.height = norm_h;
+    g.normals.width = g.surface.width;
+    g.normals.height = g.surface.height;
     g.normals.logical_width = g.surface.logical_width;
     g.normals.logical_height = g.surface.logical_height;
-    g.normals.flags = TARGET_RENDER | TARGET_HALF_FLOAT;
+    g.normals.flags = TARGET_RENDER | TARGET_RG_HALF_FLOAT;
     allocate(g.normals);
     mark_normals_full(g);
   }
-  if (g.normals_size[0] != size[0] || g.normals_size[1] != size[1])
-    mark_normals_full(g);
   if (!g.normals_dirty)
     return;
-  struct PixelRect {
-    int x0, y0, x1, y1;
-  };
-  std::vector<PixelRect> pixels;
-  bool full = g.normals_full || g.dirty_rects.empty();
-  if (!full) {
-    float sx = (float)g.normals.width / std::max(1, g.surface.logical_width);
-    float sy = (float)g.normals.height / std::max(1, g.surface.logical_height);
-    int pad_x = (int)ceilf(3.2f * g.normals.width / size[0] + sx) + 3;
-    int pad_y = (int)ceilf(3.2f * g.normals.height / size[1] + sy) + 3;
-    uint64_t area = 0;
-    for (const DirtyRect &r : g.dirty_rects) {
-      int x0 = std::clamp((int)floorf(r.x0 * sx) - pad_x, 0, g.normals.width);
-      int y0 = std::clamp((int)floorf(r.y0 * sy) - pad_y, 0, g.normals.height);
-      int x1 = std::clamp((int)ceilf(r.x1 * sx) + pad_x, 0, g.normals.width);
-      int y1 = std::clamp((int)ceilf(r.y1 * sy) + pad_y, 0, g.normals.height);
-      if (x1 > x0 && y1 > y0) {
-        pixels.push_back({x0, y0, x1, y1});
-        area += (uint64_t)(x1 - x0) * (uint64_t)(y1 - y0);
-      }
-    }
-    if (pixels.empty()) {
-      g.normals_dirty = g.normals_full = false;
-      g.dirty_rects.clear();
-      return;
-    }
-    if (area * 2 >= (uint64_t)g.normals.width * (uint64_t)g.normals.height)
-      full = true;
+  int dirty_count = 0;
+  for (uint32_t row : g.dirty_tiles)
+    dirty_count += __builtin_popcount(row);
+  bool full = g.normals_full || dirty_count * 2 >= GROUND_DIRTY_GRID * GROUND_DIRTY_GRID;
+  if (!full && dirty_count == 0) {
+    g.normals_dirty = false;
+    return;
   }
-  if (!fits(uniform_stream, ground_normals.frag->uniform_size + uniform_stream.alignment))
-    submit();
   pass_into(g.normals);
   Output o;
   o.format = format_of(g.normals);
-  Uniforms fragment(*ground_normals.frag);
-  fragment.set("u_ground_size", size, 8);
   wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_normals, o));
   bind(ground_normals,
        fragment_group(ground_normals, {{"u_surface_tex", g.surface.view, linear_clamp()},
                                        {"u_material_tex", g.coverage.view, linear_clamp()}}),
-       nullptr, &fragment);
+       nullptr, nullptr);
   if (full) {
     wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
   } else {
-    for (const PixelRect &r : pixels) {
-      wgpuRenderPassEncoderSetScissorRect(pass, (uint32_t)r.x0, (uint32_t)r.y0,
-                                          (uint32_t)(r.x1 - r.x0), (uint32_t)(r.y1 - r.y0));
-      wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+    int w = g.normals.width, h = g.normals.height;
+    for (int ty = 0; ty < GROUND_DIRTY_GRID; ++ty) {
+      uint32_t row = g.dirty_tiles[ty];
+      if (!row)
+        continue;
+      int py0 = ty * h / GROUND_DIRTY_GRID;
+      int py1 = ((ty + 1) * h + GROUND_DIRTY_GRID - 1) / GROUND_DIRTY_GRID;
+      for (int tx = 0; tx < GROUND_DIRTY_GRID; ) {
+        if (!(row & (1u << tx))) {
+          ++tx;
+          continue;
+        }
+        int tx0 = tx;
+        while (tx < GROUND_DIRTY_GRID && (row & (1u << tx)))
+          ++tx;
+        int px0 = tx0 * w / GROUND_DIRTY_GRID;
+        int px1 = (tx * w + GROUND_DIRTY_GRID - 1) / GROUND_DIRTY_GRID;
+        wgpuRenderPassEncoderSetScissorRect(pass, (uint32_t)px0, (uint32_t)py0,
+                                            (uint32_t)(px1 - px0), (uint32_t)(py1 - py0));
+        wgpuRenderPassEncoderDraw(pass, 4, 1, 0, 0);
+      }
     }
   }
   end_pass();
   g.normals_dirty = g.normals_full = false;
-  g.dirty_rects.clear();
-  g.normals_size[0] = size[0];
-  g.normals_size[1] = size[1];
+  memset(g.dirty_tiles, 0, sizeof g.dirty_tiles);
 }
 
 // A ground pass over a whole companion: the stamp shader's `kind` and `pass`

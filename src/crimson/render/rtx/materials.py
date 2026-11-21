@@ -57,6 +57,7 @@ BEAM_VISIBILITY_ROWS = MAX_MATERIAL_LIGHTS // 16
 BEAM_VISIBILITY_UNIT = 5
 LIGHT_TILES_UNIT = 6
 NORMAL_TEX_UNIT = 7
+_NORMAL_DIRTY_GRID = 32
 # Debug views where ground.frag returns before reading u_light_tiles.
 _UNLIT_DEBUG_VIEWS = frozenset((1, 2, 3, 4, 9, 10, 11, 12))
 
@@ -166,7 +167,7 @@ class MaterialGroundRenderer(GroundRenderer):
     normals: rl.RenderTexture | None = None
     normals_dirty: bool = True
     normals_full: bool = True
-    normals_dirty_rects: list[tuple[float, float, float, float]] = msgspec.field(default_factory=list)
+    normals_dirty_tiles: list[int] = msgspec.field(default_factory=lambda: [0] * _NORMAL_DIRTY_GRID)
     substrate: GroundRenderer | None = None
     stamp_shader: rl.Shader | None = None
     material_shader: rl.Shader | None = None
@@ -195,7 +196,7 @@ class MaterialGroundRenderer(GroundRenderer):
         self.surface = self.coverage = self.normals = None
         self.normals_dirty = True
         self.normals_full = True
-        self.normals_dirty_rects.clear()
+        self.normals_dirty_tiles = [0] * _NORMAL_DIRTY_GRID
         self.wetness_epoch = 0.0
         self.material_batches.clear()
 
@@ -271,7 +272,7 @@ class MaterialGroundRenderer(GroundRenderer):
             self.surface, self.coverage = surface, coverage
             self.normals_dirty = True
             self.normals_full = True
-            self.normals_dirty_rects.clear()
+            self.normals_dirty_tiles = [0] * _NORMAL_DIRTY_GRID
             self.substrate = pristine
         except BaseException:
             rl.unload_render_texture(surface)
@@ -353,11 +354,9 @@ class MaterialGroundRenderer(GroundRenderer):
             return
         tex_w = max(1.0, float(self.surface.texture.width))
         tex_h = max(1.0, float(self.surface.texture.height))
-        world_w = max(1.0, float(self.width))
-        world_h = max(1.0, float(self.height))
-        to_world_x = world_w / tex_w
-        to_world_y = world_h / tex_h
-        merge_gap = 8.0
+        grid = _NORMAL_DIRTY_GRID
+        pad = 2.0
+        marked = False
         for cmd in commands:
             rad = math.radians(cmd.rotation)
             c = math.cos(rad)
@@ -370,46 +369,25 @@ class MaterialGroundRenderer(GroundRenderer):
             cy = float(cmd.dst.y)
             xs = [cx + lx * c - ly * s for lx, ly in ((-ox, -oy), (w - ox, -oy), (w - ox, h - oy), (-ox, h - oy))]
             ys = [cy + lx * s + ly * c for lx, ly in ((-ox, -oy), (w - ox, -oy), (w - ox, h - oy), (-ox, h - oy))]
-            nx0 = min(xs) * to_world_x
-            ny0 = min(ys) * to_world_y
-            nx1 = max(xs) * to_world_x
-            ny1 = max(ys) * to_world_y
-            if not (nx1 > nx0 and ny1 > ny0):
+            tx0 = max(0, min(grid - 1, math.floor((min(xs) - pad) * grid / tex_w)))
+            ty0 = max(0, min(grid - 1, math.floor((min(ys) - pad) * grid / tex_h)))
+            tx1 = max(0, min(grid - 1, math.floor((max(xs) + pad) * grid / tex_w)))
+            ty1 = max(0, min(grid - 1, math.floor((max(ys) + pad) * grid / tex_h)))
+            if tx1 < tx0 or ty1 < ty0:
                 continue
-            merged = True
-            while merged:
-                merged = False
-                for i, (rx0, ry0, rx1, ry1) in enumerate(self.normals_dirty_rects):
-                    if (
-                        nx0 <= rx1 + merge_gap
-                        and nx1 >= rx0 - merge_gap
-                        and ny0 <= ry1 + merge_gap
-                        and ny1 >= ry0 - merge_gap
-                    ):
-                        nx0 = min(nx0, rx0)
-                        ny0 = min(ny0, ry0)
-                        nx1 = max(nx1, rx1)
-                        ny1 = max(ny1, ry1)
-                        self.normals_dirty_rects.pop(i)
-                        merged = True
-                        break
-            self.normals_dirty_rects.append((nx0, ny0, nx1, ny1))
+            row_mask = ((1 << (tx1 - tx0 + 1)) - 1) << tx0
+            for ty in range(ty0, ty1 + 1):
+                self.normals_dirty_tiles[ty] |= row_mask
+            marked = True
+        if marked:
             self.normals_dirty = True
             self.normals_full = False
-            if len(self.normals_dirty_rects) > 16:
-                self.normals_full = True
-                self.normals_dirty_rects.clear()
-                return
 
     def _ensure_normals(self) -> rl.RenderTexture:
         assert self.surface is not None and self.coverage is not None
         size = self.surface.texture
-        world_w = max(1.0, float(self.width))
-        world_h = max(1.0, float(self.height))
-        # Maintain at least 2 texels per world unit so magnified/coarse terrain keeps
-        # accurate finite-difference slopes at fractional UVs.
-        norm_w = max(int(size.width), min(4096, math.ceil(world_w * 2.0)))
-        norm_h = max(int(size.height), min(4096, math.ceil(world_h * 2.0)))
+        norm_w = int(size.width)
+        norm_h = int(size.height)
         if (
             self.normals is None
             or int(self.normals.texture.width) != norm_w
@@ -426,36 +404,15 @@ class MaterialGroundRenderer(GroundRenderer):
             rl.set_texture_wrap(self.normals.texture, rl.TextureWrap.TEXTURE_WRAP_CLAMP)
             self.normals_dirty = True
             self.normals_full = True
-            self.normals_dirty_rects.clear()
+            self.normals_dirty_tiles = [0] * _NORMAL_DIRTY_GRID
         if not self.normals_dirty:
             return self.normals
         if self.normals_shader is None:
             self.normals_shader = _shader(GROUND_NORMALS_FRAGMENT)
         sh = self.normals_shader
-        _apply_uniforms(sh, self.normals_locations, [("u_ground_size", [world_w, world_h], 2)])
-        full = self.normals_full or not self.normals_dirty_rects
-        pixel_rects: list[tuple[int, int, int, int]] = []
-        if not full:
-            sx = norm_w / world_w
-            sy = norm_h / world_h
-            pad_x = math.ceil(3.2 * sx + sx) + 3
-            pad_y = math.ceil(3.2 * sy + sy) + 3
-            area = 0
-            for rx0, ry0, rx1, ry1 in self.normals_dirty_rects:
-                x0 = max(0, min(norm_w, math.floor(rx0 * sx) - pad_x))
-                y0 = max(0, min(norm_h, math.floor(ry0 * sy) - pad_y))
-                x1 = max(0, min(norm_w, math.ceil(rx1 * sx) + pad_x))
-                y1 = max(0, min(norm_h, math.ceil(ry1 * sy) + pad_y))
-                if x1 > x0 and y1 > y0:
-                    pixel_rects.append((x0, y0, x1, y1))
-                    area += (x1 - x0) * (y1 - y0)
-            if not pixel_rects:
-                self.normals_dirty = False
-                self.normals_full = False
-                self.normals_dirty_rects.clear()
-                return self.normals
-            if area * 2 >= norm_w * norm_h:
-                full = True
+        grid = _NORMAL_DIRTY_GRID
+        dirty_count = sum(row.bit_count() for row in self.normals_dirty_tiles)
+        full = self.normals_full or dirty_count == 0 or dirty_count * 2 >= grid * grid
         with texture_mode(self.normals), opaque_blend():
             rl.begin_shader_mode(sh)
             try:
@@ -465,7 +422,7 @@ class MaterialGroundRenderer(GroundRenderer):
                 rl.set_shader_value_texture(
                     sh, _location(sh, self.normals_locations, "u_material_tex"), self.coverage.texture,
                 )
-                src_rect = rl_rectangle(0, 0, float(size.width), -float(size.height))
+                src_rect = rl_rectangle(0, 0, float(norm_w), -float(norm_h))
                 dst_rect = rl_rectangle(0, 0, float(norm_w), float(norm_h))
                 origin = rl_vector2(0, 0)
                 if full:
@@ -473,18 +430,32 @@ class MaterialGroundRenderer(GroundRenderer):
                     rl.rl_draw_render_batch_active()
                 else:
                     rl.rl_enable_scissor_test()
-                    for x0, y0, x1, y1 in pixel_rects:
-                        # Raylib's top-left texture space maps to OpenGL's bottom-left scissor space.
-                        rl.rl_scissor(x0, norm_h - y1, x1 - x0, y1 - y0)
-                        rl.draw_texture_pro(self.surface.texture, src_rect, dst_rect, origin, 0, rl.WHITE)
-                        rl.rl_draw_render_batch_active()
+                    for ty, row in enumerate(self.normals_dirty_tiles):
+                        if not row:
+                            continue
+                        py0 = ty * norm_h // grid
+                        py1 = ((ty + 1) * norm_h + grid - 1) // grid
+                        tx = 0
+                        while tx < grid:
+                            if not (row & (1 << tx)):
+                                tx += 1
+                                continue
+                            tx0 = tx
+                            while tx < grid and (row & (1 << tx)):
+                                tx += 1
+                            px0 = tx0 * norm_w // grid
+                            px1 = (tx * norm_w + grid - 1) // grid
+                            # Raylib's top-left texture space maps to OpenGL's bottom-left scissor space.
+                            rl.rl_scissor(px0, norm_h - py1, px1 - px0, py1 - py0)
+                            rl.draw_texture_pro(self.surface.texture, src_rect, dst_rect, origin, 0, rl.WHITE)
+                            rl.rl_draw_render_batch_active()
             finally:
                 rl.end_shader_mode()
                 if not full:
                     rl.rl_disable_scissor_test()
         self.normals_dirty = False
         self.normals_full = False
-        self.normals_dirty_rects.clear()
+        self.normals_dirty_tiles = [0] * grid
         return self.normals
 
     def _rebase_wetness(self, epoch: float) -> None:

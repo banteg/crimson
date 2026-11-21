@@ -1398,7 +1398,7 @@ def test_baked_ground_normals_reuse_across_frames_and_update_on_decals(ground_ma
         ))
         scissored_sub = debug_pixels(ground, texture, mode=1)
         scissored_fluid = debug_pixels(ground, texture, mode=2)
-        assert not ground.normals_dirty and not ground.normals_dirty_rects
+        assert not ground.normals_dirty and not any(ground.normals_dirty_tiles)
         ground.normals_dirty = True
         ground.normals_full = True
         full_sub = debug_pixels(ground, texture, mode=1)
@@ -1406,34 +1406,38 @@ def test_baked_ground_normals_reuse_across_frames_and_update_on_decals(ground_ma
         assert scissored_sub == full_sub
         assert scissored_fluid == full_fluid
     assert full_sub != before_sub
-    # Distant decals stay in separate dirty rects instead of merging into a full-map box.
-    far_a = FxQueueEntry(effect_id=7, pos=Vec2(4, 4), width=6, height=6, color=RGBA(1, 0, 0, 1))
-    far_b = FxQueueEntry(effect_id=7, pos=Vec2(60, 60), width=6, height=6, color=RGBA(1, 0, 0, 1))
-    ground._stamp_commands(list(ground._commands(TerrainFxBatch(decals=(far_a, far_b)), texture, texture)))
-    assert ground.normals_dirty and not ground.normals_full and len(ground.normals_dirty_rects) == 2
+    # Many small separated decals stay area-scissored instead of falling back to a full rebake.
+    sparse = tuple(
+        FxQueueEntry(
+            effect_id=7, pos=Vec2(2.0 + (i % 6) * 10.0, 2.0 + (i // 6) * 10.0), width=2, height=2, color=RGBA(1, 0, 0, 1),
+        )
+        for i in range(18)
+    )
+    ground._stamp_commands(list(ground._commands(TerrainFxBatch(decals=sparse), texture, texture)))
+    dirty_tiles = sum(row.bit_count() for row in ground.normals_dirty_tiles)
+    assert ground.normals_dirty and not ground.normals_full and 0 < dirty_tiles < 32 * 32 // 2
     ground._ensure_normals()
-    assert not ground.normals_dirty and not ground.normals_dirty_rects
+    assert not ground.normals_dirty and not any(ground.normals_dirty_tiles)
     ground.reset_materials()
     assert ground.normals is None and ground.normals_dirty and ground.normals_full
 
 
-def test_coarse_terrain_normals_match_live_stencil_at_fractional_uvs(raylib_context) -> None:
-    # Coarse terrain (texture_scale=4.0 -> 0.5 texels per world unit) must preserve fine
-    # normal relief between surface texels at fractional UVs.
+@pytest.mark.parametrize("texture_scale", [1.0, 4.0])
+def test_cached_relief_matches_live_normals_at_fractional_uvs(raylib_context, texture_scale: float) -> None:
+    # Both default (texture_scale=1.0) and coarse (texture_scale=4.0) terrain must preserve
+    # sharp one-texel ridge normals at fractional UVs without bilinear peak rounding.
     image = rl.gen_image_color(64, 64, rl.Color(128, 128, 128, 255))
     texture = rl.load_texture_from_image(image)
     rl.unload_image(image)
     ground = MaterialGroundRenderer(texture, texture, texture, width=64, height=64)
-    ground.schedule_stamps(TerrainLayers(base=(), overlay=(), detail=()), texture_scale=4.0)
+    ground.schedule_stamps(TerrainLayers(base=(), overlay=(), detail=()), texture_scale=texture_scale)
     ground.process_pending()
-    t_live = load_float_render_texture(131, 131, pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
-    t_baked = load_float_render_texture(131, 131, pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
+    target = load_float_render_texture(131, 131, pixel_format=rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)
     try:
         ground.bake_materials(texture, texture)
         assert ground.surface is not None and ground.coverage is not None and ground.normals is not None
         surf_w = int(ground.surface.texture.width)
-        assert surf_w == 32 and int(ground.normals.texture.width) == 128
-        # Write a one-texel ridge with height delta 0.3 directly into the coarse surface texture.
+        # Write a sharp one-texel ridge with height delta ~0.3 directly into surface.a.
         ridge_img = rl.gen_image_color(surf_w, surf_w, rl.Color(10, 0, 0, 115))
         for y in range(surf_w):
             rl.image_draw_pixel(ridge_img, surf_w // 2, y, rl.Color(10, 0, 0, 191))
@@ -1442,54 +1446,37 @@ def test_coarse_terrain_normals_match_live_stencil_at_fractional_uvs(raylib_cont
         rl.unload_image(ridge_img)
         ground.normals_dirty = True
         ground.normals_full = True
-        ground._ensure_normals()
-        assert ground.normals_shader is not None
-        with texture_mode(t_live), opaque_blend():
-            rl.begin_shader_mode(ground.normals_shader)
-            try:
-                ground_materials._apply_uniforms(
-                    ground.normals_shader, ground.normals_locations, [("u_ground_size", [64.0, 64.0], 2)],
-                )
-                rl.set_shader_value_texture(
-                    ground.normals_shader,
-                    ground_materials._location(ground.normals_shader, ground.normals_locations, "u_surface_tex"),
-                    ground.surface.texture,
-                )
-                rl.set_shader_value_texture(
-                    ground.normals_shader,
-                    ground_materials._location(ground.normals_shader, ground.normals_locations, "u_material_tex"),
-                    ground.coverage.texture,
-                )
-                rl.draw_texture_pro(
-                    ground.surface.texture,
-                    rl.Rectangle(0, 0, surf_w, -surf_w),
-                    rl.Rectangle(0, 0, 131, 131),
-                    rl.Vector2(0, 0),
-                    0,
-                    rl.WHITE,
-                )
-            finally:
-                rl.end_shader_mode()
-        with texture_mode(t_baked), opaque_blend():
-            rl.draw_texture_pro(
-                ground.normals.texture,
-                rl.Rectangle(0, 0, 128, -128),
-                rl.Rectangle(0, 0, 131, 131),
-                rl.Vector2(0, 0),
-                0,
-                rl.WHITE,
-            )
-        live = pixels(t_live)
-        baked = pixels(t_baked)
+
+        class Textures:
+            def texture(self, _texture_id):
+                return texture
+
+        with (
+            texture_mode(target),
+            ground.surface_scope(cast(Any, Textures()), elapsed_ms=0.0, debug=1),
+        ):
+            ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=131, out_h=131)
+        rendered = pixels(target)
+        # Compare substrate normals (encoded as N * 0.5 + 0.5) against the exact analytic live stencil.
+        delta = (191 - 115) / 255.0
         max_deg = 0.0
-        for a, b in zip(live, baked, strict=True):
-            na = math.sqrt(a[0] * a[0] + a[1] * a[1] + 1.0)
-            nb = math.sqrt(b[0] * b[0] + b[1] * b[1] + 1.0)
-            cos_angle = max(-1.0, min(1.0, (a[0] * b[0] + a[1] * b[1] + 1.0) / (na * nb)))
+        for x_i in range(131):
+            wx = (x_i + 0.5) * 64.0 / 131.0
+
+            def height(x: float) -> float:
+                t = max(0.0, min(surf_w - 1.0, x * surf_w / 64.0 - 0.5))
+                return max(0.0, 1.0 - abs(t - surf_w // 2)) * delta
+
+            slope = 1.35 * (height(wx - 1.2) - height(wx + 1.2)) + 0.85 * 1.15 * (height(wx - 3.2) - height(wx + 3.2))
+            norm_a = math.sqrt(slope * slope + 1.0)
+            ax, az = slope / norm_a, 1.0 / norm_a
+            p = rendered[65 * 131 + x_i]
+            bx, by, bz = p[0] * 2.0 - 1.0, p[1] * 2.0 - 1.0, p[2] * 2.0 - 1.0
+            norm_b = math.sqrt(bx * bx + by * by + bz * bz)
+            cos_angle = max(-1.0, min(1.0, (ax * bx + az * bz) / norm_b))
             max_deg = max(max_deg, math.degrees(math.acos(cos_angle)))
-        assert max_deg < 1.0
+        assert max_deg < 0.25
     finally:
-        rl.unload_render_texture(t_live)
-        rl.unload_render_texture(t_baked)
+        rl.unload_render_texture(target)
         ground.close()
         rl.unload_texture(texture)
