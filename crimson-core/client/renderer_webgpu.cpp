@@ -1448,9 +1448,15 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
                      : material == HOST_PASS_GLOW    ? contact_glow
                                                      : creature_lit;
   WGPUBindGroup vertex_textures = nullptr;
+  int spec_topology = 3;
   if (lit && &program == &creature_lit) {
+    const unsigned short *orig_indices = indices ? (const unsigned short *)(client_memory() + indices) : nullptr;
+    int orig_count = primitive == 4 ? (int)primitive_count * 3
+                   : primitive == 5 || primitive == 6 ? (int)primitive_count + 2
+                   : (int)primitive_count;
+    spec_topology = quad_spec_topology(primitive, orig_indices, orig_count, vertex_count);
     std::vector<float> centers((size_t)vertex_count * 6);
-    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data(), primitive == 5);
+    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data(), spec_topology == 1);
     geometry.center_bytes = centers.size() * sizeof(float);
     geometry.center_at = put(vertex_stream, centers.data(), geometry.center_bytes);
     vertex_textures =
@@ -1461,7 +1467,7 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
     vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).v2("camera", scene_camera[0], scene_camera[1]);
     // creature_lit.vert's visibility at the corners (creature_visibility.glsl).
     vertex.i("u_count", light_count).set("u_occlusion_grid", occlusion_grid, 16).f("u_occlusion_cell_size", occlusion_cell);
-    vertex.i("u_dynamic_shadows", dynamic_shadows).set("u_pos", light_pos, light_count * 16);
+    vertex.i("u_dynamic_shadows", dynamic_shadows).i("u_spec_topology", spec_topology).set("u_pos", light_pos, light_count * 16);
     vertex.set("u_rgb", light_rgb, light_count * 16).set("u_dir", light_dir, light_count * 16);
     vertex.set("u_response", light_response, light_count * 16).set("u_beam_shape", beam_shape, light_count * 16);
     fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_count", light_count).f("u_ambient", 0.6f);

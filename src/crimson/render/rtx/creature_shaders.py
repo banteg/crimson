@@ -66,7 +66,9 @@ void main() {
         lightVisibility0, lightVisibility1, lightVisibility2, lightVisibility3,
         lightVisibility4, lightVisibility5, lightVisibility6, lightVisibility7
     );
-    fillSpecVisibilities(corner_wp, owner, d00, d01, has_quad, corner_id, specVis0, specVis1, specVis2, specVis3);
+    // RL_QUADS submits (0,1,2),(0,2,3) under OpenGL's last-vertex provoking convention: c11 provokes T0, c10 provokes T1.
+    int spec_role = !has_quad ? 3 : corner_id == 2 ? 1 : corner_id == 3 ? 2 : 0;
+    fillSpecVisibilities(corner_wp, owner, d00, d01, has_quad, spec_role, specVis0, specVis1, specVis2, specVis3);
     gl_Position = mvp * vec4(vertexPosition.xy, 0.0, 1.0);
 }
 """

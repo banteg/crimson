@@ -75,28 +75,24 @@ uint packQuad4(vec4 v) {
 // Compute corner-interpolated specular visibility for every reflective continuous beam strictly in the vertex stage
 // (no fragment occlusion grid walks). Every light index 0..31 has its own fixed 16-bit halfword in specVis0..3
 // (4 bits per corner: c00, c01, c11, c10), so precision never shifts when lights reorder or illumination fades to 0.
-// Only provoking vertices trace the corners their triangle consumes (OpenGL last-vertex: c11 traces T0, c10 traces T1;
-// WebGPU first-vertex: c00 traces quad-list T0+T1 / strip T1, c01 traces strip T0).
+// `spec_role` names which triangles this vertex provokes (0 = none, 1 = T0 (c00,c01,c11), 2 = T1 (c00,c11,c10),
+// 3 = both triangles or degenerate/arbitrary topology), so non-provoking vertices skip all specular shadow traces.
 void fillSpecVisibilities(
-    vec2 corner_wp, vec2 owner, vec2 d00, vec2 d01, bool has_quad, int corner_id,
+    vec2 corner_wp, vec2 owner, vec2 d00, vec2 d01, bool has_quad, int spec_role,
     out uvec4 o0, out uvec4 o1, out uvec4 o2, out uvec4 o3
 ) {
     o0 = uvec4(0xFFFFFFFFu);
     o1 = uvec4(0xFFFFFFFFu);
     o2 = uvec4(0xFFFFFFFFu);
     o3 = uvec4(0xFFFFFFFFu);
-    if (u_dynamic_shadows == 0) return;
-#ifdef VULKAN
-    bool provoking = !has_quad || corner_id == 0 || corner_id == 1;
-#else
-    bool provoking = !has_quad || corner_id == 2 || corner_id == 3;
-#endif
-    if (!provoking) return;
+    if (u_dynamic_shadows == 0 || spec_role == 0) return;
     o0 = uvec4(0u);
     o1 = uvec4(0u);
     o2 = uvec4(0u);
     o3 = uvec4(0u);
     float quad_radius = has_quad ? max(length(d00), length(d01)) : 1e20;
+    bool need_c01 = (spec_role & 1) != 0;
+    bool need_c10 = (spec_role & 2) != 0;
     int limit = min(u_count, MAX_SPEC_LIGHTS);
     for (int i = 0; i < limit; i++) {
         if (!needsContinuousSpecVis(i)) continue;
@@ -109,13 +105,6 @@ void fillSpecVisibilities(
             if (!has_quad) {
                 v = vec4(cornerSpecVisibility(i, corner_wp, owner));
             } else {
-#ifdef VULKAN
-                bool need_c01 = true;
-                bool need_c10 = corner_id == 0;
-#else
-                bool need_c01 = corner_id == 2;
-                bool need_c10 = corner_id == 3;
-#endif
                 for (int c = 0; c < 4; c++) {
                     if (c == 1 && !need_c01) continue;
                     if (c == 3 && !need_c10) continue;

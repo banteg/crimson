@@ -310,7 +310,7 @@ float bonus_grid[2], bonus_center[2];
 struct LitProgram {
   GLuint id = 0;
   GLint target_size, camera, count, ambient, pos, rgb, dir, response, occlusion_grid, occlusion_cell, shadows;
-  GLint pass, grid, shell_center, ice, ice_frozen, creature_type, beam_shape;
+  GLint pass, grid, shell_center, ice, ice_frozen, creature_type, beam_shape, spec_topology;
 };
 // The creature body grid (host_occlusion): origin, columns (0 for none) and rows,
 // cell size, the shadows setting, and its texels in an RGBA32F texture 256 wide.
@@ -605,6 +605,7 @@ void create_lit(LitProgram &p, const char *vertex, const char *fragment) {
   p.ice_frozen = uniform_location(p.id, "u_ice_frozen");
   p.creature_type = uniform_location(p.id, "u_creature_type");
   p.beam_shape = uniform_location(p.id, "u_beam_shape");
+  p.spec_topology = uniform_location(p.id, "u_spec_topology");
 }
 
 // A creature atlas's transmission part sizes or Monster Vision silhouette
@@ -766,8 +767,11 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   glDisable(GL_CULL_FACE);
   bool creatures = &p == &creature_lit;
   if (creatures) {
+    const unsigned short *idx = indices ? (const unsigned short *)(client_memory() + indices) : nullptr;
+    int topo = quad_spec_topology(primitive, idx, index_count(primitive, primitive_count), vertex_count);
+    glUniform1i(p.spec_topology, topo);
     centers.resize((size_t)vertex_count * 6);
-    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data(), primitive == 5);
+    quad_centers((const float *)(client_memory() + vertices), vertex_count, centers.data(), topo == 1);
     glBindVertexArray(vertex_array);
     glBindBuffer(GL_ARRAY_BUFFER, center_buffer);
     glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(centers.size() * sizeof(float)), centers.data(), GL_STREAM_DRAW);

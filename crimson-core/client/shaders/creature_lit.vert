@@ -11,6 +11,7 @@ layout(location = 3) in vec4 center;   // xy quad center, zw v0 - center in pixe
 layout(location = 4) in vec2 corner1;  // v3 - center in pixels
 uniform vec2 target_size;
 uniform vec2 camera;
+uniform int u_spec_topology;
 LOC(0) out vec2 fragTexCoord;
 LOC(1) out vec4 fragColor;
 LOC(2) out vec2 world;
@@ -58,5 +59,21 @@ void main() {
         lightVisibility0, lightVisibility1, lightVisibility2, lightVisibility3,
         lightVisibility4, lightVisibility5, lightVisibility6, lightVisibility7
     );
-    fillSpecVisibilities(corner_wp, owner, d00, d01, has_quad, corner_id, specVis0, specVis1, specVis2, specVis3);
+    int spec_role = 3;
+    if (has_quad) {
+#ifdef VULKAN
+        if (u_spec_topology == 0)
+            spec_role = corner_id == 0 ? 1 : corner_id == 2 ? 2 : 0;
+        else if (u_spec_topology == 1)
+            spec_role = corner_id == 1 ? 1 : corner_id == 0 ? 2 : 0;
+        else if (u_spec_topology == 2)
+            spec_role = corner_id == 0 ? 3 : 0;
+#else
+        if (u_spec_topology == 0)
+            spec_role = corner_id == 2 ? 1 : corner_id == 0 ? 2 : 0;
+        else if (u_spec_topology == 1 || u_spec_topology == 2)
+            spec_role = corner_id == 2 ? 1 : corner_id == 3 ? 2 : 0;
+#endif
+    }
+    fillSpecVisibilities(corner_wp, owner, d00, d01, has_quad, spec_role, specVis0, specVis1, specVis2, specVis3);
 }

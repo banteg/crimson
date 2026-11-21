@@ -68,3 +68,26 @@ inline void quad_centers(const float *vertices, unsigned count, float *centers, 
     }
   }
 }
+// Provoking-vertex topology for creature_lit.vert's flat specular visibility:
+// 0 = Grim canonical indexed quad list (0,1,2),(2,3,0), 1 = 4-vertex triangle strip (0,1,2),(1,2,3),
+// 2 = 4-vertex triangle fan (0,1,2),(0,2,3), 3 = arbitrary (every vertex traces all four corners).
+inline int quad_spec_topology(unsigned primitive, const unsigned short *indices, int count, unsigned vertex_count) {
+  if (primitive == 4 && indices && count > 0 && count % 6 == 0) {
+    bool canonical = true;
+    for (int i = 0; i < count; i += 6) {
+      unsigned base = (unsigned)(i / 6 * 4);
+      if (indices[i] != base || indices[i + 1] != base + 1 || indices[i + 2] != base + 2 ||
+          indices[i + 3] != base + 2 || indices[i + 4] != base + 3 || indices[i + 5] != base) {
+        canonical = false;
+        break;
+      }
+    }
+    if (canonical)
+      return 0;
+  }
+  if (primitive == 5 && !indices && vertex_count == 4)
+    return 1;
+  if (primitive == 6 && !indices && vertex_count == 4)
+    return 2;
+  return 3;
+}
