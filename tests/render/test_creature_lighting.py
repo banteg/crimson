@@ -657,15 +657,29 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         head_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
         assert sum(p[2] for p in head_ref) < sum(p[2] for p in clear_ref) - .05
 
-        # Stepping across a crowd-cell boundary on the side away from a beam must not pop specular highlights.
+        # Partial specular occlusion: a narrow blocker covering one side of the sprite's rays to the beam head
+        # while missing the center ray must still partially shadow the highlight (corner-interpolated, not flat),
+        # identically through both the separate specVisibility slots (illumination > 0) and lightVisibility (reflection-only).
+        side_blocker = BodyVolume(Vec2(325, 102), Vec2(6, 6), 32, 0., owner=Vec2(325, 102))
+        occlusion.upload(build_occlusion_grid([side_blocker], [reflection_only], width=1024, height=1024))
+        partial_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
+        assert sum(p[2] for p in head_ref) < sum(p[2] for p in partial_ref) < sum(p[2] for p in clear_ref) - .005
+        occlusion.upload(build_occlusion_grid([side_blocker], [fading], width=1024, height=1024))
+        partial_fading = render([fading], occlusion=occlusion, center=owner, camera=cam)
+        for a, b in zip(partial_fading, partial_ref, strict=True):
+            assert a == pytest.approx(b, abs=.002)
+
+        # Nearby crowd in the next cell (< 64 units away) must still shadow a creature standing in an empty cell.
         from crimson.render.rtx.reflection_occlusion import CROWD_BODIES
 
-        crowd_beam = msgspec.structs.replace(reflection_only, pos=Vec2(96, 16), direction=Vec2(1, 0), length=64)
-        crowd = [BodyVolume(Vec2(96, 96), Vec2(12, 10), 32, 0., owner=Vec2(96, 96))] * (CROWD_BODIES + 1)
-        occlusion.upload(build_occlusion_grid(crowd, [crowd_beam], width=1024, height=1024))
-        inside_edge = render([crowd_beam], occlusion=occlusion, center=Vec2(96, 127.999), camera=Vec2(64 - 96, 64 - 128))
-        outside_edge = render([crowd_beam], occlusion=occlusion, center=Vec2(96, 128.001), camera=Vec2(64 - 96, 64 - 128))
-        assert max(abs(a[2] - b[2]) for a, b in zip(inside_edge, outside_edge, strict=True)) < .005
+        close_light = MaterialLight(Vec2(154, 96), 110, (1.4, .68, .2), height=24)
+        close_crowd = [BodyVolume(Vec2(139, 96), Vec2(8, 12), 28, 0., owner=Vec2(139, 96))] * (CROWD_BODIES + 1)
+        close_owner = Vec2(110, 96)
+        close_cam = Vec2(64, 64) - close_owner
+        close_clear = render([close_light], center=close_owner, camera=close_cam)
+        occlusion.upload(build_occlusion_grid(close_crowd, [close_light], width=1024, height=1024))
+        close_blocked = render([close_light], occlusion=occlusion, center=close_owner, camera=close_cam)
+        assert sum(p[0] for p in close_blocked) < sum(p[0] for p in close_clear) * .9
 
         # Zero-direction, zero-length continuous beam: head halo extends along +X (beamFrame fallback) and shadows.
         from crimson.render.rtx.continuous_beam import prepare_beam_lights

@@ -17,9 +17,11 @@ in vec4 lightVisibility4;
 in vec4 lightVisibility5;
 in vec4 lightVisibility6;
 in vec4 lightVisibility7;
-// Continuous-beam specular visibility toward the nearest segment point, sixteen lights per uvec4 (one byte each).
-flat in uvec4 specVisibility0;
-flat in uvec4 specVisibility1;
+// Corner-interpolated specular visibility for illuminating continuous beams, four slots per vec4.
+in vec4 specVisibility0;
+in vec4 specVisibility1;
+in vec4 specVisibility2;
+in vec4 specVisibility3;
 uniform sampler2D texture0;
 uniform sampler2D u_thickness;
 uniform vec4 colDiffuse;
@@ -49,13 +51,11 @@ float lightVisibility(int i) {
     int lane = i - i / 4 * 4;
     return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
 }
-float specVisibility(int i) {
-    uvec4 half_group = i < 16 ? specVisibility0 : specVisibility1;
-    int local = i - (i / 16) * 16;
-    int word = local / 4;
-    uint packed = word == 0 ? half_group.x : word == 1 ? half_group.y : word == 2 ? half_group.z : half_group.w;
-    uint shift = uint((local - word * 4) * 8);
-    return float((packed >> shift) & 255u) / 255.0;
+float specVisibility(int slot) {
+    vec4 group = slot < 8 ? (slot < 4 ? specVisibility0 : specVisibility1)
+                          : (slot < 12 ? specVisibility2 : specVisibility3);
+    int lane = slot - slot / 4 * 4;
+    return lane == 0 ? group.x : lane == 1 ? group.y : lane == 2 ? group.z : group.w;
 }
 float cellGrid() { return u_ice != 0 ? float(u_ice) : 8.0; }
 vec4 spriteSample(vec2 uv) {
@@ -197,6 +197,7 @@ void main() {
                vec3(.6, .8, .95) * pow(max(sky, 0.), 80.) * .5;
     }
     vec3 added = vec3(0);
+    int spec_slot = 0;
     for (int i = 0; i < u_count; i++) {
         vec2 dp = wp - u_pos[i].xy;
         vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
@@ -206,6 +207,9 @@ void main() {
         vec2 source = ring ? nearestRingPoint(u_pos[i].xy, wp, u_rgb[i].w) : u_pos[i].xy + axis * along;
         float spec_distance = length(source - wp);
         bool continuous = !ring && u_beam_shape[i].w > 0.;
+        int my_spec_slot = -1;
+        if (continuous && u_response[i].x > 0. && u_response[i].y > 0. && u_response[i].z > 0.)
+            my_spec_slot = spec_slot++;
         if (!continuous && spec_distance >= max(u_pos[i].z, u_response[i].z)) continue;
         float source_width = max(.1, u_response[i].w);
         if (u_response[i].y > 0. && spec_distance < u_response[i].z) {
@@ -217,7 +221,8 @@ void main() {
                                max(dot(N, spec_L), 0.) * min(1.0, source_width / 3.0);
             float spec_amount = u_response[i].y * s * s * axial_gain * catchlight *
                                 (2.0 * DOME_STRENGTH + .20 * RIM_STRENGTH) * (.2 + .8 * lum);
-            added += u_rgb[i].rgb * spec_amount * spec_gain * breakup * (continuous ? specVisibility(i) : lightVisibility(i));
+            float spec_vis = my_spec_slot >= 0 && my_spec_slot < 16 ? specVisibility(my_spec_slot) : lightVisibility(i);
+            added += u_rgb[i].rgb * spec_amount * spec_gain * breakup * spec_vis;
         }
         if (u_response[i].x <= 0.) continue;
         vec2 delta;

@@ -25,8 +25,10 @@ out vec4 lightVisibility4;
 out vec4 lightVisibility5;
 out vec4 lightVisibility6;
 out vec4 lightVisibility7;
-flat out uvec4 specVisibility0;
-flat out uvec4 specVisibility1;
+out vec4 specVisibility0;
+out vec4 specVisibility1;
+out vec4 specVisibility2;
+out vec4 specVisibility3;
 """ + glsl("creature_visibility.glsl") + r"""
 void main() {
     fragTexCoord = vertexTexCoord;
@@ -41,8 +43,7 @@ void main() {
     lightVisibility5 = cornerVisibilities(5, world, owner);
     lightVisibility6 = cornerVisibilities(6, world, owner);
     lightVisibility7 = cornerVisibilities(7, world, owner);
-    specVisibility0 = specVisibilities(0, owner);
-    specVisibility1 = specVisibilities(1, owner);
+    fillSpecVisibilities(world, owner, specVisibility0, specVisibility1, specVisibility2, specVisibility3);
     gl_Position = mvp * vec4(vertexPosition, 1.0);
 }
 """
