@@ -1087,10 +1087,10 @@ void check_terrain_snapshots() {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, g2.normals.framebuffer);
     glReadPixels(0, 0, g2.normals.width, g2.normals.height, GL_RGBA, GL_FLOAT, full.data());
     assert(scissored == full);
-    // Optional relief allocation failure falls back cleanly to direct sampling without exiting.
-    release(g2.normals);
-    g2.normals_failed_w = g2.surface.width;
-    g2.normals_failed_h = g2.surface.height;
+    // Optional relief allocation failure falls back cleanly to direct sampling without exiting,
+    // and evict_ground_normals() reclaims resident relief storage before retrying required allocations.
+    assert(evict_ground_normals());
+    assert(!evict_ground_normals());
     assert(!update_ground_normals(g2) && !g2.normals.framebuffer);
     w2c_host_set_render_target(nullptr, 0);
     renderer_resize(128, 64);

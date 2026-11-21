@@ -460,6 +460,7 @@ Target &target_or_back(int id) {
 
 void release(Target &t);
 void bind_target();
+bool evict_ground_normals();
 
 bool try_allocate(Target &t) {
   while (glGetError() != GL_NO_ERROR) {}
@@ -498,8 +499,16 @@ bool try_allocate(Target &t) {
 }
 
 void allocate(Target &t) {
-  if (!try_allocate(t))
-    client_fatal("Could not allocate render target");
+  Target spec = t;
+  spec.texture = spec.framebuffer = 0;
+  if (try_allocate(t))
+    return;
+  if (evict_ground_normals()) {
+    t = spec;
+    if (try_allocate(t))
+      return;
+  }
+  client_fatal("Could not allocate render target");
 }
 
 void release(Target &t) {
@@ -860,6 +869,23 @@ void release_spare_normals(int id = 0) {
     release(spare_ground_normals);
     spare_ground_normals_id = 0;
   }
+}
+
+bool evict_ground_normals() {
+  bool freed = false;
+  if (spare_ground_normals.texture || spare_ground_normals.framebuffer) {
+    release_spare_normals();
+    freed = true;
+  }
+  for (auto &[id, g] : grounds) {
+    if (g.normals.texture || g.normals.framebuffer) {
+      release(g.normals);
+      g.normals_failed_w = g.surface.width;
+      g.normals_failed_h = g.surface.height;
+      freed = true;
+    }
+  }
+  return freed;
 }
 
 void drop_ground(int id) {

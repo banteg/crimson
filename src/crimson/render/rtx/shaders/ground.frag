@@ -54,9 +54,9 @@ float blood_below_ice(vec4 surface, vec4 coverage) {
     return clamp(surface.b * coverage.r / (exposed * exposed), 0.0, 0.999);
 }
 
-float packed_blood_below_ice(vec4 packed) {
-    float exposed = max(packed.a, 0.001);
-    return clamp(packed.g * packed.b / (exposed * exposed), 0.0, 0.999);
+float packed_blood_below_ice(vec4 relief) {
+    float exposed = max(relief.a, 0.001);
+    return clamp(relief.g * relief.b / (exposed * exposed), 0.0, 0.999);
 }
 
 #ifndef BEAM_VISIBILITY_PASS
