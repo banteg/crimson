@@ -657,6 +657,35 @@ def test_beam_specular_shadow_traces_nearest_segment_and_stays_stable_when_illum
         head_ref = render([reflection_only], occlusion=occlusion, center=owner, camera=cam)
         assert sum(p[2] for p in head_ref) < sum(p[2] for p in clear_ref) - .05
 
+        # Stepping across a crowd-cell boundary on the side away from a beam must not pop specular highlights.
+        from crimson.render.rtx.reflection_occlusion import CROWD_BODIES
+
+        crowd_beam = msgspec.structs.replace(reflection_only, pos=Vec2(96, 16), direction=Vec2(1, 0), length=64)
+        crowd = [BodyVolume(Vec2(96, 96), Vec2(12, 10), 32, 0., owner=Vec2(96, 96))] * (CROWD_BODIES + 1)
+        occlusion.upload(build_occlusion_grid(crowd, [crowd_beam], width=1024, height=1024))
+        inside_edge = render([crowd_beam], occlusion=occlusion, center=Vec2(96, 127.999), camera=Vec2(64 - 96, 64 - 128))
+        outside_edge = render([crowd_beam], occlusion=occlusion, center=Vec2(96, 128.001), camera=Vec2(64 - 96, 64 - 128))
+        assert max(abs(a[2] - b[2]) for a, b in zip(inside_edge, outside_edge, strict=True)) < .005
+
+        # Zero-direction, zero-length continuous beam: head halo extends along +X (beamFrame fallback) and shadows.
+        from crimson.render.rtx.continuous_beam import prepare_beam_lights
+
+        zero_dir_beam = MaterialLight(
+            Vec2(192, 64), 100, (1.4, .68, .2), height=24, direction=Vec2(0, 0), length=0,
+            source_width=3, illumination_gain=4, reflection_gain=0, reflection_radius=100,
+            reflection_tail=0., beam_profile=(64., 6., 1.35),
+        )
+        zero_owner = Vec2(317, 64)  # 125 units right of center; past 100 + 22.6 without +X halo span
+        zero_cam = Vec2(64, 64) - zero_owner
+        zero_base = render([], center=zero_owner, camera=zero_cam)
+        zero_clear = render([zero_dir_beam], center=zero_owner, camera=zero_cam)
+        assert sum(p[0] for p in zero_clear) > sum(p[0] for p in zero_base) + .02
+        zero_blocker = BodyVolume(Vec2(260, 64), Vec2(16, 16), 36, 0., owner=Vec2(260, 64))
+        _, zero_grid = prepare_beam_lights([zero_dir_beam])
+        occlusion.upload(build_occlusion_grid([zero_blocker], zero_grid, width=1024, height=1024))
+        zero_blocked = render([zero_dir_beam], occlusion=occlusion, center=zero_owner, camera=zero_cam)
+        assert sum(p[0] for p in zero_blocked) < sum(p[0] for p in zero_clear) - .01
+
         # Dropping illumination budget from 1e-4 to 0 must not pop specular shadows for either blocker.
         for blocker in (shaft_blocker, head_blocker):
             occlusion.upload(build_occlusion_grid([blocker], [fading], width=1024, height=1024))

@@ -22,11 +22,12 @@ vec2 nearestOn(int i, vec2 axis, bool ring, float lo_span, float hi_span, vec2 p
 float cornerVisibility(int i, vec2 wp, vec2 owner) {
     if (i >= u_count || u_dynamic_shadows == 0) return 1.;
     if (u_response[i].x <= 0. && u_response[i].y <= 0.) return 1.;
-    vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : vec2(0.);
     bool ring = u_rgb[i].w > 0.;
     bool continuous = !ring && u_beam_shape[i].w > 0.;
     // Continuous beams trace specular visibility separately toward the nearest segment point; diffuse alone uses this.
     if (continuous && u_response[i].x <= 0.) return 1.;
+    // Match beamFrame's +X fallback when a continuous beam has a zero or near-zero direction.
+    vec2 axis = dot(u_dir[i].xy, u_dir[i].xy) > .0001 ? normalize(u_dir[i].xy) : (continuous ? vec2(1., 0.) : vec2(0.));
     float half_length = u_dir[i].w * .5;
     float lo_emit = continuous ? min(-half_length, half_length - u_beam_shape[i].y) : -half_length;
     float hi_emit = continuous ? half_length + u_beam_shape[i].y : half_length;
