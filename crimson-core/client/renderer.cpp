@@ -1252,6 +1252,35 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
   Target &t = drawing_target(current_target);
   if (visibility_dirty)
     prepare_ground_visibility(t.logical_width, t.logical_height);
+  // Upload light tiles before updating relief and selecting the shader so any
+  // tile-growth eviction falls back cleanly to ground_direct_program on this draw.
+  ground_tiles.prepare(ground_size[0], ground_size[1], light_count, light_pos, ground_dir, light_rgb,
+                       light_response, beam_shape, beam_lights);
+  if (ground_tiles.width) {
+    glActiveTexture(GL_TEXTURE4);
+    if (!ground_tile_texture) glGenTextures(1, &ground_tile_texture);
+    glBindTexture(GL_TEXTURE_2D, ground_tile_texture);
+    if (ground_tile_width != ground_tiles.width || ground_tile_height != ground_tiles.height) {
+      while (glGetError() != GL_NO_ERROR) {}
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ground_tiles.width, ground_tiles.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      GLenum err = glGetError();
+      if (err != GL_NO_ERROR && evict_ground_normals()) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ground_tiles.width, ground_tiles.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        err = glGetError();
+      }
+      if (err != GL_NO_ERROR) {
+        ground_tile_width = ground_tile_height = 0;
+        ground_tiles.width = ground_tiles.height = 0;
+      } else {
+        ground_tile_width = ground_tiles.width, ground_tile_height = ground_tiles.height;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      }
+    }
+    if (ground_tiles.width)
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ground_tiles.width, ground_tiles.height, GL_RGBA, GL_UNSIGNED_BYTE,
+                      ground_tiles.masks.data());
+  }
   bool has_normals = update_ground_normals(g);
   gpu_mark("ground-shade");
   if (!has_normals && !ground_direct_program)
@@ -1277,33 +1306,6 @@ bool ground_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32
     glUniform4fv(at("u_spec_response"), light_count, light_response);
     glUniform4fv(at("u_spec_tail"), (light_count + 3) / 4, light_tail);
     glUniform4fv(at("u_beam_shape"), light_count, beam_shape);
-  }
-  ground_tiles.prepare(ground_size[0], ground_size[1], light_count, light_pos, ground_dir, light_rgb,
-                         light_response, beam_shape, beam_lights);
-  if (ground_tiles.width) {
-    glActiveTexture(GL_TEXTURE4);
-    if (!ground_tile_texture) glGenTextures(1, &ground_tile_texture);
-    glBindTexture(GL_TEXTURE_2D, ground_tile_texture);
-    if (ground_tile_width != ground_tiles.width || ground_tile_height != ground_tiles.height) {
-      while (glGetError() != GL_NO_ERROR) {}
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ground_tiles.width, ground_tiles.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-      GLenum err = glGetError();
-      if (err != GL_NO_ERROR && evict_ground_normals()) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ground_tiles.width, ground_tiles.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        err = glGetError();
-      }
-      if (err != GL_NO_ERROR) {
-        ground_tile_width = ground_tile_height = 0;
-        ground_tiles.width = ground_tiles.height = 0;
-      } else {
-        ground_tile_width = ground_tiles.width, ground_tile_height = ground_tiles.height;
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      }
-    }
-    if (ground_tiles.width)
-      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ground_tiles.width, ground_tiles.height, GL_RGBA, GL_UNSIGNED_BYTE,
-                      ground_tiles.masks.data());
   }
   glUniform2i(at("u_light_tile_size"), ground_tiles.width, ground_tiles.height);
   const GLuint inputs[] = {g.substrate.texture, g.surface.texture, g.coverage.texture,

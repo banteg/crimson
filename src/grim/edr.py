@@ -143,6 +143,36 @@ def load_optional_float_render_texture(
     return _allocate_float_render_texture(width, height, pixel_format)
 
 
+def _texture_has_storage(texture: rl.Texture, width: int, height: int) -> bool:
+    if int(texture.id) <= 0:
+        return False
+    bind = _gl("glBindTexture", C.c_uint, C.c_uint)
+    query = _gl("glGetTexLevelParameteriv", C.c_uint, C.c_int, C.c_uint, C.POINTER(C.c_int))
+    stored_w, stored_h = C.c_int(), C.c_int()
+    bind(_GL_TEXTURE_2D, int(texture.id))
+    query(_GL_TEXTURE_2D, 0, 0x1000, C.byref(stored_w))  # GL_TEXTURE_WIDTH
+    query(_GL_TEXTURE_2D, 0, 0x1001, C.byref(stored_h))  # GL_TEXTURE_HEIGHT
+    bind(_GL_TEXTURE_2D, 0)
+    return stored_w.value == width and stored_h.value == height
+
+
+def load_texture_with_reclaim(image: rl.Image) -> rl.Texture:
+    """Upload a texture, verifying GPU storage and retrying once after reclaiming optional caches."""
+    width, height = int(image.width), int(image.height)
+    texture = rl.load_texture_from_image(image)
+    if _texture_has_storage(texture, width, height):
+        return texture
+    if int(texture.id) > 0:
+        rl.unload_texture(texture)
+    if reclaim_optional_targets():
+        texture = rl.load_texture_from_image(image)
+        if _texture_has_storage(texture, width, height):
+            return texture
+        if int(texture.id) > 0:
+            rl.unload_texture(texture)
+    return rl.Texture(0, 0, 0, 0, 0)
+
+
 class _MacosEdr:
     """Cocoa bridge for raylib's NSWindow; loaded only on macOS with an open GL context."""
 
