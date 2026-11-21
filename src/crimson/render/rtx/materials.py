@@ -247,6 +247,22 @@ class MaterialGroundRenderer(GroundRenderer):
         super()._generate_texture(layers, texture_scale)
 
     def _initialize_materials(self) -> None:
+        try:
+            self._allocate_materials()
+        except RuntimeError:
+            if self.normals is None:
+                raise
+            # Evict retained optional relief storage and retry required terrain targets once.
+            rl.unload_render_texture(self.normals)
+            self.normals = None
+            if self.render_target is not None:
+                self.normals_failed_size = (
+                    int(self.render_target.texture.width),
+                    int(self.render_target.texture.height),
+                )
+            self._allocate_materials()
+
+    def _allocate_materials(self) -> None:
         assert self.render_target is not None
         if self.stamp_shader is None:
             self.stamp_shader = _shader(STAMP_FRAGMENT)

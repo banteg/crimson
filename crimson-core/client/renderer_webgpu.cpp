@@ -564,6 +564,8 @@ void forget_groups() {
 
 // --- Targets ----------------------------------------------------------------------
 
+void evict_ground_normals();
+
 bool try_allocate(Target &t) {
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
   descriptor.size = {(uint32_t)t.width, (uint32_t)t.height, 1};
@@ -591,6 +593,11 @@ bool try_allocate(Target &t) {
 }
 
 void allocate(Target &t) {
+  // WebGPU reports OOM asynchronously, so release optional relief caches before
+  // allocating any required render target (resize, snapshot, or ground rebuild);
+  // the next shaded frame re-probes relief allocation inside an OOM error scope.
+  if (t.flags & TARGET_RENDER)
+    evict_ground_normals();
   try_allocate(t);
 }
 
@@ -995,6 +1002,17 @@ void release_spare_normals(int id = 0) {
   if (!id || spare_ground_normals_id == id) {
     release(spare_ground_normals);
     spare_ground_normals_id = 0;
+  }
+}
+
+void evict_ground_normals() {
+  release_spare_normals();
+  for (auto &[id, g] : grounds) {
+    if (g.normals.texture) {
+      release(g.normals);
+      g.normals_state = NORMALS_NONE;
+      g.normals_token = 0;
+    }
   }
 }
 

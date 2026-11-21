@@ -1576,7 +1576,6 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
     ground, texture = ground_material
     uniform_deep_film(ground, texture)
     cached_sub = debug_pixels(ground, texture, mode=1)
-    cached_fluid = debug_pixels(ground, texture, mode=2)
     assert ground.normals is not None
     normals_id = int(ground.normals.id)
 
@@ -1606,12 +1605,57 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
     assert seen_normals_on_resize == [None]
     assert ground.normals is None
 
-    # If the optional relief target cannot be allocated, ground.frag falls back cleanly.
-    with (
-        _ground_material() as (fallback_ground, fallback_texture),
-        patch.object(ground_materials, "load_float_render_texture") as loader,
+    # If a replay seek hits VRAM pressure while rebuilding required material targets,
+    # retained optional relief is evicted and _initialize_materials() retries cleanly.
+    ground.reset_materials()
+    ground.schedule_stamps(layers, texture_scale=1.0)
+    ground.process_pending()
+    assert ground.normals is None
+    uniform_deep_film(ground, texture)
+    assert debug_pixels(ground, texture, mode=1, shadows=False) == cached_sub
+    assert ground.normals is not None
+    ground.reset_materials()
+    assert ground.normals is not None
+    real_loader = load_float_render_texture
+    evict_attempts = 0
+
+    def fail_until_evicted(
+        width: int,
+        height: int,
+        *,
+        pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
     ):
-        real_loader = load_float_render_texture
+        nonlocal evict_attempts
+        if pixel_format == rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 and ground.normals is not None:
+            evict_attempts += 1
+            raise RuntimeError("simulated VRAM pressure while optional relief is retained")
+        return real_loader(width, height, pixel_format=pixel_format)
+
+    with patch.object(ground_materials, "load_float_render_texture", side_effect=fail_until_evicted):
+        ground.bake_materials(texture, texture)
+    assert evict_attempts == 1
+    assert ground.normals is None and ground.normals_failed_size is not None
+    assert ground.surface is not None and ground.coverage is not None
+
+    # If the optional relief target cannot be allocated inside a draw target scope,
+    # _ensure_normals() restores the enclosing framebuffer and falls back cleanly.
+    with _ground_material() as (fallback_ground, fallback_texture):
+        fallback_ground.material_batches.append(
+            TerrainFxBatch(
+                decals=(FxQueueEntry(effect_id=7, pos=Vec2(24, 24), width=16, height=16, rotation=0.4, color=RGBA(1, 0, 0, 1)),),
+                corpses=(FxQueueRotatedEntry(top_left=Vec2(20, 20), scale=18, rotation=0.3, color=RGBA(1, 1, 1, 1)),),
+            ),
+        )
+        ref_sub = debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False)
+        ref_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2, shadows=False)
+        assert any(abs(p[0] - 0.5) > 0.01 or abs(p[1] - 0.5) > 0.01 for p in ref_sub)
+        assert fallback_ground.normals is not None
+        rl.unload_render_texture(fallback_ground.normals)
+        fallback_ground.normals = None
+        fallback_ground.normals_dirty = True
+        fallback_ground.normals_full = True
+        fallback_ground.normals_failed_size = None
+        oom_calls = 0
 
         def fail_half_float(
             width: int,
@@ -1619,18 +1663,20 @@ def test_ground_relief_reuses_target_across_reset_and_falls_back_on_oom(ground_m
             *,
             pixel_format: int = rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16,
         ):
+            nonlocal oom_calls
             if pixel_format == rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R16G16B16A16:
+                oom_calls += 1
                 # Simulate load_float_render_texture failing at rl_framebuffer_complete()
-                # after changing the active framebuffer binding.
+                # after changing the active framebuffer binding inside texture_mode(target).
                 rl.rl_disable_framebuffer()
                 raise RuntimeError("simulated VRAM exhaustion")
             return real_loader(width, height, pixel_format=pixel_format)
 
-        loader.side_effect = fail_half_float
-        uniform_deep_film(fallback_ground, fallback_texture)
-        fallback_sub = debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False)
-        fallback_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2, shadows=False)
+        with patch.object(ground_materials, "load_float_render_texture", side_effect=fail_half_float):
+            fallback_sub = debug_pixels(fallback_ground, fallback_texture, mode=1, shadows=False)
+            fallback_fluid = debug_pixels(fallback_ground, fallback_texture, mode=2, shadows=False)
+        assert oom_calls == 1
         assert fallback_ground.normals is None
         assert fallback_ground.normals_failed_size is not None
-    assert fallback_sub == pytest.approx(cached_sub, abs=0.005)
-    assert fallback_fluid == pytest.approx(cached_fluid, abs=0.005)
+        assert max(abs(a - b) for p, q in zip(fallback_sub, ref_sub, strict=True) for a, b in zip(p, q, strict=True)) < 0.005
+        assert max(abs(a - b) for p, q in zip(fallback_fluid, ref_fluid, strict=True) for a, b in zip(p, q, strict=True)) < 0.005
