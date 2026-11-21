@@ -424,9 +424,16 @@ WGPURenderPipeline pipeline(Program &p, const Output &o) {
     }
   } else if (p.input == BEAM_CORNERS) {
     attributes[0].format = WGPUVertexFormat_Float32x4;
+    attributes[0].offset = 0;
     attributes[0].shaderLocation = 0;
-    buffer.arrayStride = 16;
-    buffer.attributeCount = 1;
+    attributes[1].format = WGPUVertexFormat_Float32x4;
+    attributes[1].offset = 16;
+    attributes[1].shaderLocation = 1;
+    attributes[2].format = WGPUVertexFormat_Float32x2;
+    attributes[2].offset = 32;
+    attributes[2].shaderLocation = 2;
+    buffer.arrayStride = 40;
+    buffer.attributeCount = 3;
   }
   WGPUBlendState blend = WGPU_BLEND_STATE_INIT;
   blend.color.operation = blend.alpha.operation = o.op;
@@ -812,7 +819,12 @@ void wgpu_renderer_resize(int window_width, int window_height) {
   reallocate(back, v.width, v.height, back.flags);
 }
 
+void flush_ground_stamps();
+void flush_beams();
+
 void wgpu_renderer_present(int window_width, int window_height) {
+  flush_beams();
+  flush_ground_stamps();
   Target &back = textures[0];
   Viewport v = wgpu_renderer_viewport(window_width, window_height);
   if (!back.texture || !v.width)
@@ -938,8 +950,31 @@ struct Ground {
 std::unordered_map<int, Ground> grounds;
 int ground_kind = HOST_GROUND_END;
 float ground_seconds;
+bool ground_batch;
+
+struct GroundStamp {
+  int kind;
+  float seconds;
+  WGPUPrimitiveTopology topology;
+  uint64_t vertex_bytes, index_bytes;
+  int index_count;
+  size_t vertex_at, index_at; // in ground_stamp_bytes; index_at SIZE_MAX for none
+  unsigned render_states[256], stage_states[STAGES][32];
+  int bound[STAGES];
+};
+std::vector<GroundStamp> ground_stamps;
+std::vector<unsigned char> ground_stamp_bytes;
+int ground_stamp_target;
+
+void discard_ground_stamps(int id) {
+  if (ground_stamp_target == id) {
+    ground_stamps.clear();
+    ground_stamp_bytes.clear();
+  }
+}
 
 void drop_ground(int id) {
+  discard_ground_stamps(id);
   auto it = grounds.find(id);
   if (it == grounds.end())
     return;
@@ -988,42 +1023,152 @@ void rebase_wetness(Ground &g, float epoch) {
   g.epoch = epoch;
 }
 
-void stamp_ground(Ground &g, int kind, const Geometry &geometry) {
-  if (ground_seconds - g.epoch > 180)
+void queue_ground_stamp(Ground &g, WGPUPrimitiveTopology topology, const void *vertices, u32 vertex_count,
+                        const unsigned short *indices, int index_count) {
+  if (ground_stamp_target != current_target || ground_stamps.size() >= 256)
+    flush_ground_stamps();
+  if (ground_kind != HOST_GROUND_DECAL && ground_seconds - g.epoch > 180) {
+    flush_ground_stamps();
+    if (!fits(uniform_stream, 2 * (ground_fill.frag->uniform_size + 512)))
+      submit();
     rebase_wetness(g, ground_seconds);
-  auto it = textures.find(bound[0]);
-  bool present = bound[0] && it != textures.end() && it->second.texture;
-  Input atlas = {"texture0", present ? it->second.view : blank_view,
-                 sampler(stage_states[0][TSS_ADDRESSU], stage_states[0][TSS_ADDRESSV], stage_states[0][TSS_MAGFILTER] >= 2,
-                         stage_states[0][TSS_MINFILTER] >= 2)};
-  bool blood = kind == HOST_GROUND_BLOOD;
-  for (int pass_id = 0; pass_id < (blood ? 2 : 3); ++pass_id) {
-    Target &into = pass_id ? g.surface : g.coverage;
-    pass_into(into);
-    Output o;
-    o.format = format_of(into);
-    o.topology = geometry.topology;
-    o.blend = true;
-    o.dst = WGPUBlendFactor_OneMinusSrcAlpha;
-    if (pass_id == 0) {
-      // RGB weighs the materials alpha-over; A is ice coverage, which every later material occludes.
-      o.src = WGPUBlendFactor_SrcAlpha;
-      o.alpha_src = kind == HOST_GROUND_ICE ? WGPUBlendFactor_One : WGPUBlendFactor_Zero;
-      o.alpha_dst = WGPUBlendFactor_OneMinusSrcAlpha;
-    } else if (pass_id == 1) {
-      o.src = blood ? WGPUBlendFactor_One : WGPUBlendFactor_SrcAlpha;
-      o.mask = (blood ? 0 : WGPUColorWriteMask_Red) | WGPUColorWriteMask_Green | WGPUColorWriteMask_Blue;
-    } else {
-      o.src = WGPUBlendFactor_One;
-      o.mask = WGPUColorWriteMask_Alpha;
-    }
-    Uniforms vertex(*ground_stamp.vert), fragment(*ground_stamp.frag);
-    vertex.v2("target_size", (float)into.logical_width, (float)into.logical_height);
-    fragment.i("u_kind", kind).i("u_pass", pass_id).f("u_wetness", expf((ground_seconds - g.epoch) / 45));
-    wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_stamp, o));
-    bind(ground_stamp, fragment_group(ground_stamp, {atlas}), &vertex, &fragment);
+  }
+  ground_stamp_target = current_target;
+  GroundStamp s;
+  s.kind = ground_kind, s.seconds = ground_seconds;
+  s.topology = topology;
+  s.vertex_bytes = (uint64_t)vertex_count * 28;
+  s.index_bytes = indices ? (uint64_t)index_count * 2 : 0;
+  s.index_count = index_count;
+  const unsigned char *v = (const unsigned char *)vertices;
+  s.vertex_at = ground_stamp_bytes.size();
+  ground_stamp_bytes.insert(ground_stamp_bytes.end(), v, v + s.vertex_bytes);
+  s.index_at = SIZE_MAX;
+  if (indices) {
+    const unsigned char *i = (const unsigned char *)indices;
+    s.index_at = ground_stamp_bytes.size();
+    ground_stamp_bytes.insert(ground_stamp_bytes.end(), i, i + s.index_bytes);
+  }
+  memcpy(s.render_states, render_states, sizeof render_states);
+  memcpy(s.stage_states, stage_states, sizeof stage_states);
+  memcpy(s.bound, bound, sizeof bound);
+  ground_stamps.push_back(s);
+}
+
+void flush_ground_stamps() {
+  if (ground_stamps.empty())
+    return;
+  auto found = grounds.find(ground_stamp_target);
+  if (found == grounds.end()) {
+    ground_stamps.clear();
+    ground_stamp_bytes.clear();
+    return;
+  }
+  Ground &g = found->second;
+  auto upload = [](const GroundStamp &s, uint64_t uniform_need) {
+    if (!fits(vertex_stream, s.vertex_bytes) || !fits(index_stream, s.index_bytes + 3) ||
+        !fits(uniform_stream, uniform_need))
+      submit();
+    Geometry geometry;
+    geometry.topology = s.topology;
+    geometry.vertex_bytes = s.vertex_bytes;
+    geometry.index_bytes = s.index_bytes;
+    geometry.index_count = s.index_count;
+    geometry.vertex_at = put(vertex_stream, ground_stamp_bytes.data() + s.vertex_at, s.vertex_bytes);
+    if (s.index_at != SIZE_MAX)
+      geometry.index_at = put(index_stream, ground_stamp_bytes.data() + s.index_at, s.index_bytes);
+    return geometry;
+  };
+  // Pass-major: all substrate draws in one render pass, then all coverage stamps in one pass,
+  // then both surface passes together in one surface render pass.
+  unsigned saved_states[256], saved_stages[STAGES][32];
+  int saved_bound[STAGES];
+  memcpy(saved_states, render_states, sizeof render_states);
+  memcpy(saved_stages, stage_states, sizeof stage_states);
+  memcpy(saved_bound, bound, sizeof bound);
+  uint64_t classic_uniforms = classic.frag->uniform_size + classic.vert->uniform_size + 512;
+  for (const GroundStamp &s : ground_stamps) {
+    if (s.kind == HOST_GROUND_BLOOD)
+      continue;
+    Geometry geometry = upload(s, classic_uniforms);
+    memcpy(render_states, s.render_states, sizeof render_states);
+    memcpy(stage_states, s.stage_states, sizeof stage_states);
+    memcpy(bound, s.bound, sizeof bound);
+    pass_into(g.substrate);
+    bind_classic(g.substrate, geometry.topology);
     draw_geometry(geometry);
   }
+  memcpy(render_states, saved_states, sizeof render_states);
+  memcpy(stage_states, saved_stages, sizeof stage_states);
+  memcpy(bound, saved_bound, sizeof bound);
+
+  uint64_t stamp_uniforms = ground_stamp.frag->uniform_size + ground_stamp.vert->uniform_size + 512;
+  for (int pass_id = 0; pass_id < 3; ++pass_id) {
+    Target &into = pass_id ? g.surface : g.coverage;
+    for (const GroundStamp &s : ground_stamps) {
+      if (s.kind == HOST_GROUND_DECAL || (pass_id == 2 && s.kind == HOST_GROUND_BLOOD))
+        continue;
+      Geometry geometry = upload(s, stamp_uniforms);
+      auto it = textures.find(s.bound[0]);
+      bool present = s.bound[0] && it != textures.end() && it->second.texture;
+      Input atlas = {"texture0", present ? it->second.view : blank_view,
+                     sampler(s.stage_states[0][TSS_ADDRESSU], s.stage_states[0][TSS_ADDRESSV],
+                             s.stage_states[0][TSS_MAGFILTER] >= 2, s.stage_states[0][TSS_MINFILTER] >= 2)};
+      bool blood = s.kind == HOST_GROUND_BLOOD;
+      pass_into(into);
+      Output o;
+      o.format = format_of(into);
+      o.topology = geometry.topology;
+      o.blend = true;
+      o.dst = WGPUBlendFactor_OneMinusSrcAlpha;
+      if (pass_id == 0) {
+        // RGB weighs the materials alpha-over; A is ice coverage, which every later material occludes.
+        o.src = WGPUBlendFactor_SrcAlpha;
+        o.alpha_src = s.kind == HOST_GROUND_ICE ? WGPUBlendFactor_One : WGPUBlendFactor_Zero;
+        o.alpha_dst = WGPUBlendFactor_OneMinusSrcAlpha;
+      } else if (pass_id == 1) {
+        o.src = blood ? WGPUBlendFactor_One : WGPUBlendFactor_SrcAlpha;
+        o.mask = (blood ? 0 : WGPUColorWriteMask_Red) | WGPUColorWriteMask_Green | WGPUColorWriteMask_Blue;
+      } else {
+        o.src = WGPUBlendFactor_One;
+        o.mask = WGPUColorWriteMask_Alpha;
+      }
+      Uniforms vertex(*ground_stamp.vert), fragment(*ground_stamp.frag);
+      vertex.v2("target_size", (float)into.logical_width, (float)into.logical_height);
+      fragment.i("u_kind", s.kind).i("u_pass", pass_id).f("u_wetness", expf((s.seconds - g.epoch) / 45));
+      wgpuRenderPassEncoderSetPipeline(pass, pipeline(ground_stamp, o));
+      bind(ground_stamp, fragment_group(ground_stamp, {atlas}), &vertex, &fragment);
+      draw_geometry(geometry);
+    }
+  }
+  ground_stamps.clear();
+  ground_stamp_bytes.clear();
+}
+
+struct BeamVertex {
+  float x, y, u, v, r, g, b, a, length, step;
+};
+std::vector<BeamVertex> beam_vertices;
+int beam_batch_count = 0;
+
+void flush_beams() {
+  if (beam_vertices.empty())
+    return;
+  uint64_t bytes = (uint64_t)beam_vertices.size() * sizeof(BeamVertex);
+  if (!fits(vertex_stream, bytes) || !fits(uniform_stream, 512))
+    submit();
+  Target &t = drawing_target(current_target);
+  pass_into(t);
+  Uniforms vertex(*beam.vert), fragment(*beam.frag);
+  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height);
+  fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_in_world", in_world(t));
+  wgpuRenderPassEncoderSetPipeline(pass, pipeline(beam, device_output(t, WGPUPrimitiveTopology_TriangleList)));
+  bind(beam, fragment_group(beam, {}), &vertex, &fragment);
+  uint64_t at = put(vertex_stream, beam_vertices.data(), bytes);
+  wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertex_stream.buffer, at, bytes);
+  wgpuRenderPassEncoderDraw(pass, (int)beam_vertices.size(), 1, 0, 0);
+  beam_vertices.clear();
+  beam_batch_count = 0;
 }
 
 // Vertices the host makes, in the device's layout (x, y, z, rhw, D3DCOLOR, u, v).
@@ -1121,6 +1266,7 @@ bool ground_draw(const Geometry &geometry) {
   auto it = textures.find(bound[0]);
   if (!bound[0] || it == textures.end() || !(it->second.flags & TARGET_RENDER))
     return false;
+  flush_ground_stamps();
   Ground &g = ground_of(bound[0]);
   Target &t = drawing_target(current_target);
   if (visibility_dirty)
@@ -1158,7 +1304,7 @@ bool ground_draw(const Geometry &geometry) {
 // --- RTX fluid smoke (game/rtx_smoke.cpp), as in renderer.cpp ---------------------
 enum { SMOKE_TARGETS = 5, SMOKE_DISPLAY_MAX_AXIS = 640 };
 Target smoke_targets[SMOKE_TARGETS], smoke_composite;
-int smoke_current, smoke_iterations;
+int smoke_current, smoke_pressure = 3, smoke_iterations;
 float smoke_resolution, smoke_world[2], smoke_dt, smoke_decay = 0.2f, smoke_fade = 1;
 
 void release_smoke() {
@@ -1199,6 +1345,8 @@ Output smoke_adding() {
 }
 
 bool wgpu_renderer_set_rtx(bool enabled) {
+  flush_beams();
+  flush_ground_stamps();
   rtx = enabled;
   world = false;
   visibility_dirty = true;
@@ -1233,6 +1381,7 @@ bool wgpu_renderer_profile_gpu(long long &, std::string &) { return false; }
 
 extern "C" {
 void wgpu_w2c_host_frame_hold(struct w2c_host *, u32 op) {
+  flush_beams();
   if (op == 5) { // HOST_FRAME_ANCHOR_DROP
     release(anchor);
     return;
@@ -1276,6 +1425,7 @@ static void copy_target(Target &to, Target &from) {
   copy(from, to);
 }
 u32 wgpu_w2c_host_texture_bytes(struct w2c_host *, u32 id) {
+  flush_ground_stamps();
   auto texture = textures.find((int)id);
   if (texture == textures.end()) return 0;
   auto bytes = [](const Target &t) {
@@ -1293,6 +1443,8 @@ u32 wgpu_w2c_host_texture_bytes(struct w2c_host *, u32 id) {
 void wgpu_w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
   if (destination == source)
     return;
+  flush_beams();
+  flush_ground_stamps();
   Target &from = target_or_back((int)source);
   if (!from.texture)
     return;
@@ -1336,6 +1488,8 @@ void wgpu_w2c_host_texture_create(struct w2c_host *, u32 id, u32 width, u32 heig
   allocate(t);
 }
 void wgpu_w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
+  if ((int)id == ground_stamp_target)
+    flush_ground_stamps();
   auto it = textures.find((int)id);
   if (it == textures.end())
     return;
@@ -1373,6 +1527,7 @@ void wgpu_w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
   wgpuQueueWriteTexture(queue, &destination, rgba.data(), rgba.size(), &layout, &extent);
 }
 void wgpu_w2c_host_texture_release(struct w2c_host *, u32 id) {
+  flush_beams();
   auto it = textures.find((int)id);
   if (it == textures.end() || !id)
     return;
@@ -1393,8 +1548,10 @@ void wgpu_w2c_host_texture_release(struct w2c_host *, u32 id) {
   }
 }
 void wgpu_w2c_host_render_state(struct w2c_host *, u32 state, u32 value) {
-  if (state < 256)
+  if (state < 256 && render_states[state] != value) {
+    flush_beams();
     render_states[state] = value;
+  }
 }
 void wgpu_w2c_host_texture_stage_state(struct w2c_host *, u32 stage, u32 state, u32 value) {
   if (stage < STAGES && state < 32)
@@ -1404,8 +1561,15 @@ void wgpu_w2c_host_set_texture(struct w2c_host *, u32 stage, u32 id) {
   if (stage < STAGES)
     bound[stage] = (int)id;
 }
-void wgpu_w2c_host_set_render_target(struct w2c_host *, u32 id) { current_target = (int)id; }
+void wgpu_w2c_host_set_render_target(struct w2c_host *, u32 id) {
+  if (current_target != (int)id)
+    flush_beams();
+  if (!ground_batch)
+    flush_ground_stamps();
+  current_target = (int)id;
+}
 void wgpu_w2c_host_clear(struct w2c_host *, u32 color) {
+  flush_beams();
   drop_ground(current_target);
   Target &t = drawing_target(current_target);
   WGPUColor clear = {(color >> 16 & 255) / 255.0, (color >> 8 & 255) / 255.0, (color & 255) / 255.0,
@@ -1414,6 +1578,7 @@ void wgpu_w2c_host_clear(struct w2c_host *, u32 color) {
 }
 void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_count, u32 indices,
                         u32 primitive_count) {
+  flush_beams();
   int index_count = primitive == 4 ? primitive_count * 3 : primitive == 5 || primitive == 6 ? primitive_count + 2
                     : primitive == 2 ? primitive_count * 2 : primitive == 3 ? primitive_count + 1 : primitive_count;
   // WebGPU has no fans: their triangles as a list.
@@ -1520,15 +1685,10 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
   draw_geometry(geometry);
   if (!g)
     return;
-  if (ground_kind != HOST_GROUND_BLOOD) {
-    pass_into(g->substrate);
-    bind_classic(g->substrate, geometry.topology);
-    draw_geometry(geometry);
-  }
-  if (ground_kind != HOST_GROUND_DECAL)
-    stamp_ground(*g, ground_kind, geometry);
+  queue_ground_stamp(*g, geometry.topology, client_memory() + vertices, vertex_count, index_data, index_count);
 }
 void wgpu_w2c_host_circle(struct w2c_host *, u32 shape, u32 color) {
+  flush_beams();
   EffectVertex vertices[4];
   circle_quad((const float *)(client_memory() + shape), color, vertices, circle);
   // A strip of the fan's corners.
@@ -1556,27 +1716,23 @@ static void upload_analytic_vertices(const void *vertices, uint64_t bytes,
 void wgpu_w2c_host_beam(struct w2c_host *, u32 corners, f32 length, f32 step, u32 color) {
   if (!rtx)
     return;
-  if (!fits(vertex_stream, 64) || !fits(uniform_stream, 512))
-    submit();
-  Target &t = drawing_target(current_target);
-  pass_into(t);
-  Uniforms vertex(*beam.vert), fragment(*beam.frag);
-  vertex.v2("target_size", (float)t.logical_width, (float)t.logical_height).f("beam_length", length).f("beam_step", step);
-  vertex.v4("beam_color", (color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f,
-            (color >> 24) / 255.0f);
-  fragment.v4("colDiffuse", 1, 1, 1, 1).i("u_in_world", in_world(t));
-  wgpuRenderPassEncoderSetPipeline(pass, pipeline(beam, device_output(t, WGPUPrimitiveTopology_TriangleStrip)));
-  bind(beam, fragment_group(beam, {}), &vertex, &fragment);
-  // The quad's corners run around it; a strip takes them as 0, 1, 3, 2.
+  if (beam_batch_count >= 1024)
+    flush_beams();
   const float *c = (const float *)(client_memory() + corners);
-  static const int order[4] = {0, 1, 3, 2};
-  float strip[16];
-  for (int i = 0; i < 4; ++i)
-    memcpy(strip + i * 4, c + order[i] * 4, 16);
-  upload_analytic_vertices(strip, sizeof strip, 4);
+  float r = (color >> 16 & 255) / 255.0f;
+  float g = (color >> 8 & 255) / 255.0f;
+  float b = (color & 255) / 255.0f;
+  float a = (color >> 24) / 255.0f;
+  static const int order[6] = {0, 1, 2, 0, 2, 3};
+  for (int corner : order) {
+    const float *p = c + corner * 4;
+    beam_vertices.push_back(BeamVertex{p[0], p[1], p[2], p[3], r, g, b, a, length, step});
+  }
+  ++beam_batch_count;
 }
 static void draw_effect_vertices(const EffectVertex *vertices, int count,
                                  int kind, const float *params) {
+  flush_beams();
   uint64_t bytes = count * sizeof(EffectVertex);
   if (!fits(vertex_stream, bytes) || !fits(uniform_stream, 1024))
     submit();
@@ -1723,9 +1879,17 @@ void wgpu_w2c_host_heat_trails(struct w2c_host *, f32 alpha) {
   wgpuRenderPassEncoderDraw(pass, 6, 1, 0, 0);
 }
 void wgpu_w2c_host_ground(struct w2c_host *, u32 kind, f32 seconds) {
-  // WebGPU already records its draws into a command buffer.
-  if ((int)kind == HOST_GROUND_BATCH_BEGIN || (int)kind == HOST_GROUND_BATCH_END)
+  if ((int)kind == HOST_GROUND_BATCH_BEGIN) {
+    ground_batch = true;
     return;
+  }
+  if ((int)kind == HOST_GROUND_BATCH_END) {
+    ground_batch = false;
+    flush_ground_stamps();
+    return;
+  }
+  if ((int)kind == HOST_GROUND_END)
+    flush_ground_stamps();
   ground_kind = (int)kind;
   ground_seconds = seconds;
 }
@@ -1749,6 +1913,7 @@ void wgpu_w2c_host_smoke(struct w2c_host *, u32 commands, u32 count) {
         begin_pass(t, &none);
       }
       smoke_current = 0;
+      smoke_pressure = 3;
       c += 6;
       break;
     }
@@ -1777,17 +1942,17 @@ void wgpu_w2c_host_smoke(struct w2c_host *, u32 commands, u32 count) {
       break;
     }
     case SMOKE_PROJECT: {
-      // Advect velocity, take its divergence, relax pressure, then subtract its gradient.
+      // Advect velocity, take its divergence, warm-start Jacobi pressure from the
+      // previous step (cleared on SMOKE_RESET), then subtract its gradient.
       int other = 1 - smoke_current;
       smoke_pass(other, smoke_current, 0);
       smoke_pass(2, other, 1);
-      WGPUColor none = {0, 0, 0, 0};
-      begin_pass(smoke_targets[3], &none);
-      int pressure = 3;
+      int pressure = smoke_pressure;
       for (int i = 0; i < smoke_iterations; ++i) {
         smoke_pass(7 - pressure, pressure, 2, 2);
         pressure = 7 - pressure;
       }
+      smoke_pressure = pressure;
       smoke_pass(smoke_current, other, 3, pressure);
       c += 1;
       break;
@@ -1824,6 +1989,7 @@ void wgpu_w2c_host_smoke(struct w2c_host *, u32 commands, u32 count) {
 }
 void wgpu_w2c_host_smoke_draw(struct w2c_host *, u32 view, u32 lights, u32 light_count, u32 sights,
                               u32 sight_count) {
+  flush_beams();
   if (!rtx || !world || !smoke_targets[0].texture)
     return;
   if (!fits(uniform_stream, 4096))
@@ -1917,12 +2083,14 @@ void wgpu_w2c_host_occlusion(struct w2c_host *, u32 grid, u32 values, u32 count)
   wgpuQueueWriteTexture(queue, &destination, texels.data(), texels.size() * 4, &layout, &extent);
 }
 void wgpu_w2c_host_bonus(struct w2c_host *, u32 emblem, f32 grid_x, f32 grid_y, f32 center_x, f32 center_y) {
+  flush_beams();
   material = MATERIAL_BONUS;
   bonus_emblem = (int)emblem;
   bonus_grid[0] = grid_x, bonus_grid[1] = grid_y;
   bonus_center[0] = center_x, bonus_center[1] = center_y;
 }
 void wgpu_w2c_host_render_pass(struct w2c_host *, u32 pass_kind) {
+  flush_beams();
   creature_type = creature_type_for_pass(pass_kind);
   if (creature_type) pass_kind = HOST_PASS_CREATURES;
   if (pass_kind >= HOST_PASS_CREATURES) {

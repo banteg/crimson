@@ -17,7 +17,7 @@ from .smoke_shaders import SMOKE_VERTEX
 
 GRID_SIZE = 320
 GUARD_BAND = 128.0
-PRESSURE_ITERATIONS = 12
+PRESSURE_ITERATIONS = 8
 MAX_IMPULSES_PER_TICK = 64
 # Moving bodies' drag, on a budget of its own: a swarm cannot crowd out blasts, muzzle jets or shots.
 MAX_BODY_IMPULSES_PER_TICK = 64
@@ -55,6 +55,7 @@ class GpuSmokeSimulation:
         self.origin = Vec2(-GUARD_BAND, -GUARD_BAND)
         self.size = Vec2(1024+2*GUARD_BAND, 1024+2*GUARD_BAND)
         self.current = 0
+        self.pressure = 3
         self.accumulator = 0.0
         self.decay = .20
         self.dirty_reset = True
@@ -292,6 +293,7 @@ class GpuSmokeSimulation:
                 with texture_mode(target):
                     rl.clear_background(rl.BLANK)
             self.current = 0
+            self.pressure = 3
             self.dirty_reset = False
         while self.batches:
             emissions, dt, fade, impulses = self.batches.popleft()
@@ -321,13 +323,13 @@ class GpuSmokeSimulation:
                 other = 1-self.current
                 self._pass(other, self.current, 0)
                 self._pass(2, other, 1)
-                with texture_mode(self.targets[3]):
-                    rl.clear_background(rl.BLANK)
-                p = 3
+                # Warm-start Jacobi pressure from the previous step (cleared to zero on reset).
+                p = self.pressure
                 for _ in range(PRESSURE_ITERATIONS):
                     nxt = 7-p
                     self._pass(nxt, p, 2, 2)
                     p = nxt
+                self.pressure = p
                 self._pass(self.current, other, 3, p)
                 if self.blasts:
                     self._inject_impulses(tuple(

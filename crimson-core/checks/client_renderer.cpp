@@ -247,6 +247,7 @@ struct Pixel {
   float r, g, b, a;
 };
 Pixel back_pixel(int x, int y) {
+  flush_beams();
   Target &back = textures[0];
   Pixel pixel;
   glBindFramebuffer(GL_FRAMEBUFFER, back.framebuffer);
@@ -299,6 +300,18 @@ void check_rtx() {
   assert(back_red(210, 384) < back_red(330, 384) && back_red(330, 384) < back_red(450, 384));
   assert(fabsf(back_red(330, 378) - back_red(330, 390)) < 1e-3f && back_red(330, 380) > 0);
   assert(back_red(330, 410) == 0);
+  // Consecutive beams with different colors batch into a single draw until flushed.
+  w2c_host_clear(nullptr, 0xff000000);
+  const float left_beam[16] = {295.75f, 367.75f, -1, -1, 295.75f, 399.75f, -1, 1, 327.75f, 399.75f, 1, 1, 327.75f, 367.75f, 1, -1};
+  const float right_beam[16] = {695.75f, 367.75f, -1, -1, 695.75f, 399.75f, -1, 1, 727.75f, 399.75f, 1, 1, 727.75f, 367.75f, 1, -1};
+  memcpy(memory, left_beam, sizeof left_beam);
+  w2c_host_beam(nullptr, 0, -1, 0, 0xffff0000);
+  memcpy(memory, right_beam, sizeof right_beam);
+  w2c_host_beam(nullptr, 0, -1, 0, 0xff0000ff);
+  assert(beam_batch_count == 2);
+  Pixel lp = back_pixel(312, 384), rp = back_pixel(712, 384);
+  assert(beam_batch_count == 0);
+  assert(lp.r > 0.8f && lp.b < 1e-3f && rp.b > 0.8f && rp.r < 1e-3f);
   // The same effect.frag as Python: radial glow/aura/shell, HDR plasma,
   // and capped/cut ion arcs. Uniform arrays and blend state reach real GL.
   auto effect = [&](int kind, const float *params, unsigned color, float x0, float x1, float y0, float y1,
