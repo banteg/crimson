@@ -2,6 +2,7 @@
 
 from importlib.resources import files
 
+import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 from grim.assets import upload_texture
@@ -86,21 +87,79 @@ def build_heat_density(alpha: Image.Image) -> Image.Image:
     return blur_cells(blur_cells(alpha, 2), 2)
 
 
-def _source_alpha(source: rl.Texture) -> Image.Image:
+def build_creature_surface_map(rgba: Image.Image) -> Image.Image:
+    """Pack per-cell thickness (R), cell-clamped luminance gradient (GB), and 5x5 opaque interior mask (A)."""
+    if rgba.mode != "RGBA":
+        rgba = rgba.convert("RGBA")
+    width, height = rgba.size
+    if width <= 0 or height <= 0 or width % 8 or height % 8:
+        raise ValueError("Creature surface map requires an RGBA image with an 8x8 cell grid")
+    cell_width, cell_height = width // 8, height // 8
+    thickness = np.frombuffer(build_thickness_proxy(rgba.getchannel("A")).tobytes(), dtype=np.uint8).reshape(
+        height, width,
+    )
+    arr = np.frombuffer(rgba.tobytes(), dtype=np.uint8).reshape(height, width, 4)
+    r = arr[:, :, 0].astype(np.int32)
+    g = arr[:, :, 1].astype(np.int32)
+    b = arr[:, :, 2].astype(np.int32)
+    a = arr[:, :, 3]
+    luma = np.where(a > 0, 299 * r + 587 * g + 114 * b, 0)
+
+    def encode_grad(diff: np.ndarray) -> np.ndarray:
+        scaled = diff * 254
+        q = np.where(scaled >= 0, (scaled + 255000) // 510000, -((-scaled + 255000) // 510000))
+        return np.clip(128 + q, 1, 255).astype(np.uint8)
+
+    cells_luma = luma.reshape(8, cell_height, 8, cell_width)
+    left = np.concatenate((cells_luma[:, :, :, :1], cells_luma[:, :, :, :-1]), axis=3)
+    right = np.concatenate((cells_luma[:, :, :, 1:], cells_luma[:, :, :, -1:]), axis=3)
+    up = np.concatenate((cells_luma[:, :1, :, :], cells_luma[:, :-1, :, :]), axis=1)
+    down = np.concatenate((cells_luma[:, 1:, :, :], cells_luma[:, -1:, :, :]), axis=1)
+    gx = encode_grad((right - left).reshape(height, width))
+    gy = encode_grad((down - up).reshape(height, width))
+
+    opaque_interior = np.zeros((8, cell_height, 8, cell_width), dtype=np.uint8)
+    if cell_width >= 5 and cell_height >= 5:
+        cells_full = (a == 255).reshape(8, cell_height, 8, cell_width)
+        h_ok = (
+            cells_full[:, :, :, 0 : cell_width - 4]
+            & cells_full[:, :, :, 1 : cell_width - 3]
+            & cells_full[:, :, :, 2 : cell_width - 2]
+            & cells_full[:, :, :, 3 : cell_width - 1]
+            & cells_full[:, :, :, 4:cell_width]
+        )
+        hv_ok = (
+            h_ok[:, 0 : cell_height - 4, :, :]
+            & h_ok[:, 1 : cell_height - 3, :, :]
+            & h_ok[:, 2 : cell_height - 2, :, :]
+            & h_ok[:, 3 : cell_height - 1, :, :]
+            & h_ok[:, 4:cell_height, :, :]
+        )
+        opaque_interior[:, 2 : cell_height - 2, :, 2 : cell_width - 2] = np.where(hv_ok, 255, 0).astype(np.uint8)
+
+    packed = np.stack((thickness, gx, gy, opaque_interior.reshape(height, width)), axis=-1)
+    return Image.frombytes("RGBA", (width, height), packed.tobytes())
+
+
+def _source_rgba(source: rl.Texture) -> Image.Image:
     image = rl.load_image_from_texture(source)
     try:
         if image.data == rl.ffi.NULL:
             raise RuntimeError("Could not read creature texture for body proxy")
         rl.image_format(image, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
         pixels = bytes(rl.ffi.buffer(image.data, image.width * image.height * 4))
-        return Image.frombytes("RGBA", (image.width, image.height), pixels).getchannel("A")
+        return Image.frombytes("RGBA", (image.width, image.height), pixels)
     finally:
         rl.unload_image(image)
 
 
+def _source_alpha(source: rl.Texture) -> Image.Image:
+    return _source_rgba(source).getchannel("A")
+
+
 def load_thickness_texture(source: rl.Texture) -> rl.Texture:
-    """Read source alpha once and upload the single-channel transmission proxy."""
-    return upload_texture(build_thickness_proxy(_source_alpha(source)), clamp=True)
+    """Read source RGBA once and upload the packed creature surface map."""
+    return upload_texture(build_creature_surface_map(_source_rgba(source)), clamp=True)
 
 
 def load_heat_density_texture(source: rl.Texture) -> rl.Texture:

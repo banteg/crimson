@@ -59,8 +59,8 @@ WGPUTextureFormat canvas_format;
 // What the canvas is configured with: its size, and whether it shows extended range.
 int canvas_width, canvas_height;
 bool canvas_extended;
-WGPUTexture blank, gamma_texture;
-WGPUTextureView blank_view, gamma_view;
+WGPUTexture blank, neutral_surface, gamma_texture;
+WGPUTextureView blank_view, neutral_surface_view, gamma_view;
 // The freeze ice's surface (HOST_PASS_ICE_*), as in renderer.cpp.
 WGPUTexture ice_texture;
 WGPUTextureView ice_view;
@@ -705,9 +705,10 @@ WGPUTexture small_texture(int width, const unsigned char *rgba, WGPUTextureView 
   return texture;
 }
 
-// Transmission part sizes or Monster Vision's continuous silhouette density,
-// made once on first use, as in renderer.cpp and creature_translucency.py.
+// Packed creature surface map (R=thickness, GB=relief, A=5x5 opaque interior)
+// or Monster Vision's continuous silhouette density, made once on first use.
 WGPUTextureView shape_map(int id, bool heat = false) {
+  WGPUTextureView fallback = heat ? blank_view : neutral_surface_view;
   auto &maps = heat ? heat_density_maps : thickness_maps;
   auto made = maps.find(id);
   if (made != maps.end())
@@ -715,23 +716,23 @@ WGPUTextureView shape_map(int id, bool heat = false) {
   auto t = textures.find(id);
   auto texels = texel_addresses.find(id);
   if ((!light_count && !heat && !creature_has_ambient_material(creature_type)) || t == textures.end() || texels == texel_addresses.end())
-    return blank_view;
+    return fallback;
   int width = t->second.logical_width, height = t->second.logical_height;
   const auto *pixels = client_memory() + texels->second;
-  std::vector<unsigned char> sizes =
-      heat ? renderer_heat_density(pixels, width, height) : renderer_thickness(pixels, width, height);
+  std::vector<unsigned char> data =
+      heat ? renderer_heat_density(pixels, width, height) : renderer_creature_surface(pixels, width, height);
   WGPUTextureDescriptor descriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
   descriptor.size = {(uint32_t)width, (uint32_t)height, 1};
-  descriptor.format = WGPUTextureFormat_R8Unorm;
+  descriptor.format = heat ? WGPUTextureFormat_R8Unorm : WGPUTextureFormat_RGBA8Unorm;
   descriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
   Thickness map;
   map.texture = wgpuDeviceCreateTexture(device, &descriptor);
   map.view = wgpuTextureCreateView(map.texture, nullptr);
   WGPUTexelCopyTextureInfo destination = WGPU_TEXEL_COPY_TEXTURE_INFO_INIT;
   destination.texture = map.texture;
-  WGPUTexelCopyBufferLayout layout = {0, (uint32_t)width, (uint32_t)height};
+  WGPUTexelCopyBufferLayout layout = {0, (uint32_t)width * (heat ? 1u : 4u), (uint32_t)height};
   WGPUExtent3D extent = {(uint32_t)width, (uint32_t)height, 1};
-  wgpuQueueWriteTexture(queue, &destination, sizes.data(), sizes.size(), &layout, &extent);
+  wgpuQueueWriteTexture(queue, &destination, data.data(), data.size(), &layout, &extent);
   return (maps[id] = map).view;
 }
 
@@ -760,6 +761,8 @@ void wgpu_renderer_init() {
     create(*p);
   const unsigned char white[4] = {255, 255, 255, 255};
   blank = small_texture(1, white, blank_view);
+  const unsigned char neutral[4] = {255, 128, 128, 0};
+  neutral_surface = small_texture(1, neutral, neutral_surface_view);
   ice_texture = small_texture(ICE_SURFACE_WIDTH, ice_surface, ice_view, ICE_SURFACE_HEIGHT);
   // An identity ramp until the device sets one.
   unsigned char identity[256 * 4];
@@ -1335,8 +1338,17 @@ void wgpu_w2c_host_texture_upload(struct w2c_host *, u32 id, u32 texels) {
   if (it == textures.end())
     return;
   Target &t = it->second;
-  if (!(t.flags & TARGET_RENDER))
+  if (!(t.flags & TARGET_RENDER)) {
     texel_addresses[(int)id] = texels;
+    for (auto *maps : {&thickness_maps, &heat_density_maps}) {
+      auto map = maps->find((int)id);
+      if (map != maps->end()) {
+        wgpuTextureViewRelease(map->second.view);
+        wgpuTextureRelease(map->second.texture);
+        maps->erase(map);
+      }
+    }
+  }
   // What the frame drew so far sampled the texture as it was.
   submit();
   // A8R8G8B8 texels are BGRA bytes, at logical size even for a denser target.
@@ -1489,10 +1501,10 @@ void wgpu_w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vert
                                         force_linear || stage_states[0][TSS_MAGFILTER] >= 2,
                                         force_linear || stage_states[0][TSS_MINFILTER] >= 2);
     WGPUTextureView shape = ice                               ? ice_view
-                           : !present                        ? blank_view
-                           : material == HOST_PASS_CREATURES ? shape_map(bound[0])
-                           : material == HOST_PASS_HEAT      ? shape_map(bound[0], true)
-                                                            : blank_view;
+                           : !present                         ? (material == HOST_PASS_CREATURES ? neutral_surface_view : blank_view)
+                           : material == HOST_PASS_CREATURES  ? shape_map(bound[0])
+                           : material == HOST_PASS_HEAT       ? shape_map(bound[0], true)
+                                                              : blank_view;
     wgpuRenderPassEncoderSetPipeline(pass, pipeline(program, device_output(t, geometry.topology)));
     bind(program,
          fragment_group(program, {{"texture0", present ? it->second.view : blank_view, atlas_sampler},

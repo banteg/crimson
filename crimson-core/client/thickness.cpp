@@ -80,6 +80,60 @@ Plane blur_cells(const Plane &plane, int width, int height, int radius) {
 }
 } // namespace
 
+// Packed RGBA8 creature surface map (creature_translucency.py's build_creature_surface_map):
+// R = thickness proxy, GB = cell-clamped luminance central difference (128 = 0, span +-127 = +-0.5),
+// A = 255 iff every texel in the 5x5 neighborhood is opaque (alpha == 255) strictly inside its 8x8 cell.
+std::vector<unsigned char> renderer_creature_surface(const unsigned char *bgra, int width, int height) {
+  int cell_width = width / 8, cell_height = height / 8;
+  Plane thickness = renderer_thickness(bgra, width, height);
+  size_t count = (size_t)width * height;
+  std::vector<int> luma(count);
+  Plane horiz_opaque(count);
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      size_t i = (size_t)y * width + x;
+      unsigned char b = bgra[i * 4 + 0];
+      unsigned char g = bgra[i * 4 + 1];
+      unsigned char r = bgra[i * 4 + 2];
+      unsigned char a = bgra[i * 4 + 3];
+      luma[i] = a > 0 ? (299 * (int)r + 587 * (int)g + 114 * (int)b) : 0;
+    }
+  }
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      int x0 = (x / cell_width) * cell_width, x1 = x0 + cell_width - 1;
+      bool ok = x >= x0 + 2 && x <= x1 - 2;
+      for (int dx = -2; ok && dx <= 2; ++dx)
+        ok = bgra[((size_t)y * width + (x + dx)) * 4 + 3] == 255;
+      horiz_opaque[(size_t)y * width + x] = ok ? 255 : 0;
+    }
+  }
+  auto encode_grad = [](int diff) -> unsigned char {
+    int scaled = diff * 254;
+    int q = scaled >= 0 ? (scaled + 255000) / 510000 : -((-scaled + 255000) / 510000);
+    return (unsigned char)std::clamp(128 + q, 1, 255);
+  };
+  std::vector<unsigned char> out(count * 4);
+  for (int y = 0; y < height; ++y) {
+    int y0 = (y / cell_height) * cell_height, y1 = y0 + cell_height - 1;
+    int y_lo = std::max(y0, y - 1), y_hi = std::min(y1, y + 1);
+    bool y_inner = y >= y0 + 2 && y <= y1 - 2;
+    for (int x = 0; x < width; ++x) {
+      int x0 = (x / cell_width) * cell_width, x1 = x0 + cell_width - 1;
+      int x_lo = std::max(x0, x - 1), x_hi = std::min(x1, x + 1);
+      size_t i = (size_t)y * width + x;
+      bool opaque_5x5 = y_inner;
+      for (int dy = -2; opaque_5x5 && dy <= 2; ++dy)
+        opaque_5x5 = horiz_opaque[(size_t)(y + dy) * width + x] == 255;
+      out[i * 4 + 0] = thickness[i];
+      out[i * 4 + 1] = encode_grad(luma[(size_t)y * width + x_hi] - luma[(size_t)y * width + x_lo]);
+      out[i * 4 + 2] = encode_grad(luma[(size_t)y_hi * width + x] - luma[(size_t)y_lo * width + x]);
+      out[i * 4 + 3] = opaque_5x5 ? 255 : 0;
+    }
+  }
+  return out;
+}
+
 // Monster Vision's continuous silhouette density (build_heat_density): two
 // cell-local 5x5 alpha blurs, preserving fractional coverage. A pose's part
 // sizes can jump by an entire square-opening level; density changes smoothly.

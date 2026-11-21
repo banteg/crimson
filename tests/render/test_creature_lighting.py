@@ -131,6 +131,9 @@ def lit_sprite(raylib_context):
             rl.image_draw_rectangle(other, 32, 0, 32, 32, rl.Color(255, 0, 0, 255))
         rl.update_texture(texture, other.data)
         rl.unload_image(other)
+        # This fixture mutates atlas RGB in place on one texture id; drop cached surface map.
+        if (cached := lighting.thickness_textures.pop(int(texture.id), None)) is not None:
+            rl.unload_texture(cached)
         rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR if textured
                               else rl.TextureFilter.TEXTURE_FILTER_POINT)
         lighting.prepare(lights, camera=camera, view_scale=Vec2(scale, scale), occlusion=occlusion, shadows=shadows, ambient=ambient)

@@ -239,6 +239,8 @@ std::vector<float> centers;
 // Bound to a stage with no texture: the shader never samples it, but a sampler
 // needs a complete texture behind it.
 GLuint blank_texture;
+// Neutral fallback for packed creature surface maps: thick, zero relief, rim enabled.
+GLuint neutral_surface_texture;
 // The freeze ice's surface (HOST_PASS_ICE_*), on the creature program's thickness unit.
 GLuint ice_texture;
 GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_alpha_op, u_alpha_arg1, u_alpha_arg2,
@@ -644,33 +646,40 @@ void create_lit(LitProgram &p, const char *vertex, const char *fragment) {
   p.spec_topology = uniform_location(p.id, "u_spec_topology");
 }
 
-// A creature atlas's transmission part sizes or Monster Vision silhouette
-// density, made once on first use (creature_translucency.py).
+// A creature atlas's packed surface map (R=thickness, GB=relief, A=5x5 opaque interior)
+// or Monster Vision silhouette density, made once on first use (creature_translucency.py).
 GLuint shape_map(int id, bool heat = false) {
+  GLuint fallback = heat ? blank_texture : neutral_surface_texture;
   auto &maps = heat ? heat_density_maps : thickness_maps;
   auto made = maps.find(id);
   if (made != maps.end())
-    return made->second ? made->second : blank_texture;
+    return made->second ? made->second : fallback;
   auto t = textures.find(id);
   auto texels = texel_addresses.find(id);
   if ((!light_count && !heat && !creature_has_ambient_material(creature_type)) || t == textures.end() || texels == texel_addresses.end())
-    return blank_texture;
+    return fallback;
   int width = t->second.logical_width, height = t->second.logical_height;
   const auto *pixels = client_memory() + texels->second;
-  std::vector<unsigned char> sizes =
-      heat ? renderer_heat_density(pixels, width, height) : renderer_thickness(pixels, width, height);
+  std::vector<unsigned char> data =
+      heat ? renderer_heat_density(pixels, width, height) : renderer_creature_surface(pixels, width, height);
   GLuint texture = 0;
   glGenTextures(1, &texture);
   if (!texture)
-    return blank_texture;
+    return fallback;
   glBindTexture(GL_TEXTURE_2D, texture);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  auto upload = [&]() {
+    if (heat)
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data.data());
+    else
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+  };
   while (glGetError() != GL_NO_ERROR) {}
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, sizes.data());
+  upload();
   GLenum err = glGetError();
   if (err != GL_NO_ERROR && evict_ground_normals()) {
     while (glGetError() != GL_NO_ERROR) {}
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, sizes.data());
+    upload();
     err = glGetError();
   }
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -678,7 +687,7 @@ GLuint shape_map(int id, bool heat = false) {
     glBindTexture(GL_TEXTURE_2D, 0);
     glDeleteTextures(1, &texture);
     maps[id] = 0;
-    return blank_texture;
+    return fallback;
   }
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -807,8 +816,9 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   // Lit sprite shaders always reconstruct bilinear coverage (alphaBilinear + single-tap spriteAlpha/cellAlpha).
   apply_sampler(0, stage_states[0], true);
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, ice                                         ? ice_texture
+  glBindTexture(GL_TEXTURE_2D, ice                                          ? ice_texture
                                : material == HOST_PASS_CREATURES && present ? shape_map(bound[0])
+                               : material == HOST_PASS_CREATURES            ? neutral_surface_texture
                                                                             : blank_texture);
   glBindSampler(1, 0);
   glActiveTexture(GL_TEXTURE2);
@@ -1458,6 +1468,14 @@ void GL_ENTRY(renderer_init)() {
   glGenTextures(1, &blank_texture);
   glBindTexture(GL_TEXTURE_2D, blank_texture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+  const unsigned char neutral_surface[4] = {255, 128, 128, 0};
+  glGenTextures(1, &neutral_surface_texture);
+  glBindTexture(GL_TEXTURE_2D, neutral_surface_texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, neutral_surface);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glGenTextures(1, &ice_texture);
   glBindTexture(GL_TEXTURE_2D, ice_texture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ICE_SURFACE_WIDTH, ICE_SURFACE_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, ice_surface);
@@ -1979,8 +1997,17 @@ void GL_ENTRY(w2c_host_texture_upload)(struct w2c_host *, u32 id, u32 texels) {
   if (it == textures.end())
     return;
   Target &t = it->second;
-  if (!(t.flags & TARGET_RENDER))
+  if (!(t.flags & TARGET_RENDER)) {
     texel_addresses[(int)id] = texels;
+    for (auto *maps : {&thickness_maps, &heat_density_maps}) {
+      auto map = maps->find((int)id);
+      if (map != maps->end()) {
+        if (map->second)
+          glDeleteTextures(1, &map->second);
+        maps->erase(map);
+      }
+    }
+  }
   // A8R8G8B8 texels are BGRA bytes.
   std::vector<unsigned char> rgba((size_t)t.width * t.height * 4);
   const u8 *bgra = client_memory() + texels;

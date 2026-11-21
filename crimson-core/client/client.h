@@ -71,8 +71,10 @@ void renderer_set_headroom(float headroom);
 void renderer_frame_end();
 bool renderer_profile_frame(long long &frame, std::string &record, bool &timed);
 bool renderer_profile_gpu(long long &frame, std::string &passes);
-// thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission.
+// thickness.cpp: an 8x8-cell creature atlas's part sizes for RTX transmission,
+// and its packed RGBA8 surface map (R=thickness, GB=cell-clamped relief, A=5x5 opaque interior).
 std::vector<unsigned char> renderer_thickness(const unsigned char *bgra, int width, int height);
+std::vector<unsigned char> renderer_creature_surface(const unsigned char *bgra, int width, int height);
 // Monster Vision's silhouette density: two cell-local 5x5 alpha blurs.
 std::vector<unsigned char> renderer_heat_density(const unsigned char *bgra, int width, int height);
 

@@ -66,14 +66,6 @@ float specVisibility(int i) {
         : v.x * (1. - u.x) + v.w * (u.x - u.y) + v.z * u.y;
 }
 float cellGrid() { return u_ice != 0 ? float(u_ice) : 8.0; }
-vec4 spriteSample(vec2 uv) {
-    vec2 cell = floor(fragTexCoord * cellGrid()) / cellGrid();
-    vec2 half_texel = .5 / vec2(textureSize(texture0, 0));
-    return alphaBilinear(texture0, clamp(uv, cell + half_texel, cell + vec2(1. / cellGrid()) - half_texel));
-}
-float spriteLuminance(vec2 uv) {
-    return dot(spriteSample(uv).rgb, vec3(.299, .587, .114));
-}
 float spriteAlpha(vec2 uv) {
     float grid = cellGrid();
     vec2 cell = floor(fragTexCoord * grid) / grid;
@@ -113,25 +105,11 @@ void main() {
     }
     vec2 wp = world;
     float lum = dot(encodeDisplay(texel.rgb), vec3(.299, .587, .114));
-    // Smooth body bulge plus weak texture relief: no alpha-outline rim.
-    vec2 slope = rot * q * .85;
-    // Central differences per atlas texel, independent of framebuffer scale.
-    // Clamp taps to this animation cell, then rotate the gradient into world space.
     vec2 px = 1.0 / vec2(textureSize(texture0, 0));
-    vec2 relief = .5 * vec2(
-        spriteLuminance(fragTexCoord + vec2(px.x, 0)) - spriteLuminance(fragTexCoord - vec2(px.x, 0)),
-        spriteLuminance(fragTexCoord + vec2(0, px.y)) - spriteLuminance(fragTexCoord - vec2(0, px.y)));
-    // Brighter texels are raised: the height-field normal points downhill.
-    slope -= rot * relief * .8;
-    vec3 N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
     vec3 V = normalize(vec3(0, .57735, 1));
     vec3 baseLin = base.rgb;
-    // Per-cell morphological openings estimate part size, not anatomical depth.
-    vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
-    vec2 half_texel = .5 / vec2(textureSize(u_thickness, 0));
-    vec2 thickness_uv = clamp(fragTexCoord, cell + half_texel, cell + vec2(.125) - half_texel);
-    float thickness = textureLod(u_thickness, thickness_uv, 0.).r * 16.0;
-    float transmission = exp(-.48 * thickness);
+    vec3 N;
+    float transmission;
     vec3 transmission_tint = mix(vec3(.15), baseLin, .85);
     // What the lights shade, how they catch, how much the rim follows them, and how much colour the light the
     // surface scatters keeps; light that needs no emitter.
@@ -139,52 +117,67 @@ void main() {
     float spec_gain = 1., spec_sharp = 1., rim_gain = 1., light_desat = 0.;
     vec3 glow = vec3(0);
     float breakup = 1.;
-    if (u_ice == 0 && u_creature_type != 0) {
-        // Highlight gain, sharpness, thin-part transmission and rim, followed
-        // by joint tone, relief-based sheen breakup and sky sheen.
-        vec4 material = vec4(1.);
-        vec3 detail = vec3(1., 0., 0.);
-        if (u_creature_type == 1) { // Zombie
-            material = vec4(.2, .4, .1, .6);
-        } else if (u_creature_type == 2) { // Lizard
-            material = vec4(1.1, 1.4, .4, .85);
-            detail = vec3(1., 1., .35);
-        } else if (u_creature_type == 3) { // Alien
-            material = vec4(.6, .5, 2.4, 1.2);
-            detail = vec3(1.2, 0., .15);
-        } else if (u_creature_type == 4 || u_creature_type == 5) { // Spiders
-            material = vec4(2.2, 2.8, .15, 1.);
-            detail = vec3(.45, 0., .55);
+    bool interior_rim_free = false;
+    if (u_ice == 0) {
+        // Packed per-cell surface map (creature_translucency.py): R = part-size thickness,
+        // GB = cell-clamped luminance gradient (128 = 0, +-127 = +-0.5), A = 5x5 opaque interior.
+        vec2 cell = floor(fragTexCoord * 8.0) / 8.0;
+        vec2 half_texel = .5 / vec2(textureSize(u_thickness, 0));
+        vec2 thickness_uv = clamp(fragTexCoord, cell + half_texel, cell + vec2(.125) - half_texel);
+        vec4 surface = textureLod(u_thickness, thickness_uv, 0.);
+        float thickness = surface.r * 16.0;
+        vec2 relief = (surface.gb * 255.0 - 128.0) / 254.0;
+        interior_rim_free = surface.a > 0.999;
+        // Smooth body bulge plus weak texture relief: bright texels are raised so normal points downhill.
+        vec2 slope = rot * q * .85 - rot * relief * .8;
+        N = normalize(vec3(slope, sqrt(max(.12, 1.0 - dot(slope, slope)))));
+        transmission = exp(-.48 * thickness);
+        if (u_creature_type != 0) {
+            // Highlight gain, sharpness, thin-part transmission and rim, followed
+            // by joint tone, relief-based sheen breakup and sky sheen.
+            vec4 material = vec4(1.);
+            vec3 detail = vec3(1., 0., 0.);
+            if (u_creature_type == 1) { // Zombie
+                material = vec4(.2, .4, .1, .6);
+            } else if (u_creature_type == 2) { // Lizard
+                material = vec4(1.1, 1.4, .4, .85);
+                detail = vec3(1., 1., .35);
+            } else if (u_creature_type == 3) { // Alien
+                material = vec4(.6, .5, 2.4, 1.2);
+                detail = vec3(1.2, 0., .15);
+            } else if (u_creature_type == 4 || u_creature_type == 5) { // Spiders
+                material = vec4(2.2, 2.8, .15, 1.);
+                detail = vec3(.45, 0., .55);
+            }
+            if (u_creature_type == 4) {
+                // SP1's two skins share poses. The abdomen
+                // sits farther left in the folded frames.
+                vec2 cell_uv = fract(fragTexCoord * 8.) * 64.;
+                vec2 cell_id = floor(fragTexCoord * 8.);
+                float pose = mod(cell_id.y * 8. + cell_id.x, 32.);
+                float folded = smoothstep(15., 22., pose) * (1. - smoothstep(26., 31., pose));
+                vec2 center = mix(vec2(18., 31.6), vec2(14.3, 31.8), folded);
+                vec2 ellipse = (cell_uv - center) / vec2(10.5, 6.3);
+                float shell = 1. - smoothstep(.77, 1.12, length(ellipse));
+                vec3 shell_normal = normalize(vec3(rot * ellipse, sqrt(max(.12, 1. - dot(ellipse, ellipse)))));
+                N = normalize(mix(normalize(vec3(-rot * relief * .18, 1.)), shell_normal, shell));
+                material = mix(vec4(.10, .8, .23, .24), vec4(4.3, 2.4, .07, .64), shell);
+                detail.z *= shell;
+            }
+            spec_gain = material.x;
+            spec_sharp = material.y;
+            transmission *= material.z;
+            rim_gain = material.w;
+            float thin = 1. - smoothstep(1.5, 5.5, thickness);
+            baseLin *= mix(1., detail.x, thin);
+            albedo = baseLin;
+            breakup = mix(1., smoothstep(.04, .16, abs(relief.x) + abs(relief.y)) * 1.6, detail.y);
+            if (detail.z > 0.) {
+                float sky = max(dot(reflect(-V, N), normalize(vec3(-.30, -.40, .86))), 0.);
+                glow += vec3(.42, .46, .52) * pow(sky, 6. * spec_sharp) * detail.z * breakup * (.25 + .75 * lum);
+            }
         }
-        if (u_creature_type == 4) {
-            // SP1's two skins share poses. The abdomen
-            // sits farther left in the folded frames.
-            vec2 cell_uv = fract(fragTexCoord * 8.) * 64.;
-            vec2 cell_id = floor(fragTexCoord * 8.);
-            float pose = mod(cell_id.y * 8. + cell_id.x, 32.);
-            float folded = smoothstep(15., 22., pose) * (1. - smoothstep(26., 31., pose));
-            vec2 center = mix(vec2(18., 31.6), vec2(14.3, 31.8), folded);
-            vec2 ellipse = (cell_uv - center) / vec2(10.5, 6.3);
-            float shell = 1. - smoothstep(.77, 1.12, length(ellipse));
-            vec3 shell_normal = normalize(vec3(rot * ellipse, sqrt(max(.12, 1. - dot(ellipse, ellipse)))));
-            N = normalize(mix(normalize(vec3(-rot * relief * .18, 1.)), shell_normal, shell));
-            material = mix(vec4(.10, .8, .23, .24), vec4(4.3, 2.4, .07, .64), shell);
-            detail.z *= shell;
-        }
-        spec_gain = material.x;
-        spec_sharp = material.y;
-        transmission *= material.z;
-        rim_gain = material.w;
-        float thin = 1. - smoothstep(1.5, 5.5, thickness);
-        baseLin *= mix(1., detail.x, thin);
-        albedo = baseLin;
-        breakup = mix(1., smoothstep(.04, .16, abs(relief.x) + abs(relief.y)) * 1.6, detail.y);
-        if (detail.z > 0.) {
-            float sky = max(dot(reflect(-V, N), normalize(vec3(-.30, -.40, .86))), 0.);
-            glow += vec3(.42, .46, .52) * pow(sky, 6. * spec_sharp) * detail.z * breakup * (.25 + .75 * lum);
-        }
-    }
-    if (u_ice != 0) {
+    } else {
         // The sprite's own model: a rounded, lumpy cube or a chunk of it, and its mottling.
         vec3 ice = textureLod(u_thickness, fragTexCoord, 0.).rgb;
         vec2 ice_xy = ice.xy * 2. - 1.;
@@ -248,15 +241,19 @@ void main() {
         vec3 L = normalize(vec3(delta, max(8.0, u_pos[i].w - 8.0)));
         float facing = max(dot(N, L), 0.0);
         // An inner silhouette rim, only on the edge facing this emitter.
-        // Atlas-local samples cannot reach neighboring animation frames.
-        vec2 light_xy = normalize(delta + vec2(.0001));
-        vec2 toward = transpose(rot) * light_xy;
-        vec2 side = vec2(-toward.y, toward.x);
-        float beyond = (spriteAlpha(fragTexCoord + toward * px * 1.5) +
-                        spriteAlpha(fragTexCoord + (toward * 1.5 + side * .65) * px) +
-                        spriteAlpha(fragTexCoord + (toward * 1.5 - side * .65) * px)) /
-                       3.0;
-        float edge = smoothstep(.04, .7, max(0.0, texel.a - beyond));
+        // Atlas-local samples cannot reach neighboring animation frames; interior fragments
+        // whose 5x5 cell neighborhood is fully opaque always have beyond == 1 and edge == 0.
+        float edge = 0.0;
+        if (!interior_rim_free) {
+            vec2 light_xy = normalize(delta + vec2(.0001));
+            vec2 toward = transpose(rot) * light_xy;
+            vec2 side = vec2(-toward.y, toward.x);
+            float beyond = (spriteAlpha(fragTexCoord + toward * px * 1.5) +
+                            spriteAlpha(fragTexCoord + (toward * 1.5 + side * .65) * px) +
+                            spriteAlpha(fragTexCoord + (toward * 1.5 - side * .65) * px)) /
+                           3.0;
+            edge = smoothstep(.04, .7, max(0.0, texel.a - beyond));
+        }
         float elevation = length(delta) / sqrt(dot(delta, delta) + pow(max(8.0, u_pos[i].w - 8.0), 2.0));
         // Rim and lateral thin-part transmission follow illumination, never
         // bypassing a restrained tracer's gain. Specular catches stay independent.
