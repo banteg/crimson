@@ -569,11 +569,11 @@ void apply_output_state(const Target &t) {
   glColorMask(mask & 1, mask & 2, mask & 4, (mask & 8) && !(t.flags & 2));
 }
 
-void apply_sampler(int stage, const unsigned *states) {
+void apply_sampler(int stage, const unsigned *states, bool force_linear = false) {
   SamplerState &s = sampler_states[stage];
   GLint wrap_s = address(states[TSS_ADDRESSU]), wrap_t = address(states[TSS_ADDRESSV]);
-  GLint mag = states[TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST;
-  GLint min = states[TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST;
+  GLint mag = force_linear || states[TSS_MAGFILTER] >= 2 ? GL_LINEAR : GL_NEAREST;
+  GLint min = force_linear || states[TSS_MINFILTER] >= 2 ? GL_LINEAR : GL_NEAREST;
   if (s.wrap_s.change(wrap_s)) glSamplerParameteri(samplers[stage], GL_TEXTURE_WRAP_S, wrap_s);
   if (s.wrap_t.change(wrap_t)) glSamplerParameteri(samplers[stage], GL_TEXTURE_WRAP_T, wrap_t);
   if (s.mag.change(mag)) glSamplerParameteri(samplers[stage], GL_TEXTURE_MAG_FILTER, mag);
@@ -753,7 +753,8 @@ bool lit_draw(u32 primitive, u32 vertices, u32 vertex_count, u32 indices, u32 pr
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
   glBindSampler(0, samplers[0]);
-  apply_sampler(0, stage_states[0]);
+  // Lit sprite shaders always reconstruct bilinear coverage (alphaBilinear + single-tap spriteAlpha/cellAlpha).
+  apply_sampler(0, stage_states[0], true);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, ice                                         ? ice_texture
                                : material == HOST_PASS_CREATURES && present ? shape_map(bound[0])
