@@ -58,10 +58,17 @@ bool beamAtReceiver(int index, vec4 direction, vec2 world, vec4 source, out vec2
     float x0, b, R, half_length, ramp, head;
     if (!beamFrame(index, direction, world, source, axis, x0, b, R, half_length, ramp, head, ramp_window, head_window))
         return false;
-    vec2 energy = beamPiece(ramp * (x0 + half_length), ramp, ramp_window.x, ramp_window.y, b, R)
-                + beamPiece(head, 0., head_window.x, head_window.y, b, R);
-    if (energy.x <= 0.) return false;
-    delta = source.xy + axis * (x0 + energy.y / energy.x) - world;
+    bool has_ramp = ramp > 0. && ramp_window.y > ramp_window.x;
+    bool has_head = head > 0. && head_window.y > head_window.x;
+    if (!has_ramp && !has_head) return false;
+    vec2 energy = (has_ramp ? beamPiece(ramp * (x0 + half_length), ramp, ramp_window.x, ramp_window.y, b, R) : vec2(0.))
+                + (has_head ? beamPiece(head, 0., head_window.x, head_window.y, b, R) : vec2(0.));
+    // Guard against float32 cancellation near the reach boundary producing tiny noise and out-of-span centroids.
+    if (!(energy.x > 1e-6)) return false;
+    float u_lo = has_ramp && has_head ? min(ramp_window.x, head_window.x) : (has_ramp ? ramp_window.x : head_window.x);
+    float u_hi = has_ramp && has_head ? max(ramp_window.y, head_window.y) : (has_ramp ? ramp_window.y : head_window.y);
+    float centroid_u = clamp(energy.y / energy.x, u_lo, u_hi);
+    delta = source.xy + axis * (x0 + centroid_u) - world;
     irradiance = energy.x;
     return true;
 }

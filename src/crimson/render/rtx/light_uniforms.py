@@ -39,7 +39,9 @@ def upload_material_lights(
         "u_response": [v for light in lights for v in light.response],
     }
     if locations["u_beam_shape"] >= 0:
-        values["u_beam_shape"] = [v for light in lights for v in beam_uniform(light)]
+        values["u_beam_shape"] = [
+            v for light in lights for v in beam_uniform(light, require_illumination=False)
+        ]
     for name, value in values.items():
         buf = rl.ffi.new("float[]", value)
         rl.set_shader_value_v(

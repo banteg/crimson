@@ -72,13 +72,13 @@ void main() {
         if (response.x <= 0. && response.y <= 0.) continue;
         vec2 axis = dot(dir.xy, dir.xy) > .0001 ? normalize(dir.xy) : vec2(1., 0.);
         float half_span = max(0., dir.w * .5);
-        if (u_has_beam_lights != 0) half_span = max(half_span, u_beam_shape[i].w);
+        if (u_has_beam_lights != 0 && response.x > 0.) half_span = max(half_span, u_beam_shape[i].w);
         vec2 delta = world - pos.xy;
         vec2 source = u_spec_color[i].w > 0. ? nearestRingPoint(pos.xy, world, u_spec_color[i].w)
             : pos.xy + axis * clamp(dot(delta, axis), -half_span, half_span);
         float reach = max(max(1., pos.z), response.z);
         if (length(source - world) >= reach) continue;
-        visibility[lane] = u_has_beam_lights != 0 && u_beam_shape[i].w > 0. && u_spec_color[i].w <= 0.
+        visibility[lane] = u_has_beam_lights != 0 && response.x > 0. && u_beam_shape[i].w > 0. && u_spec_color[i].w <= 0.
             ? beamAtlasVisibility(i, dir, world, pos, response)
             : sourceVisibility(vec3(world, 0.), vec3(source, max(.001, pos.w)), max(.1, response.w), vec2(1e19));
     }
@@ -222,7 +222,7 @@ void main() {
             // reflection radii of its segment (a beam's support, if longer) or ring: past that, skip it.
             vec2 reach_delta = world - sp_pos.xy;
             vec2 reach_axis = dot(sp_dir.xy, sp_dir.xy) > .0001 ? normalize(sp_dir.xy) : vec2(1., 0.);
-            float reach_half = max(sp_dir.w * .5, u_has_beam_lights != 0 ? u_beam_shape[i].w : 0.);
+            float reach_half = max(sp_dir.w * .5, u_has_beam_lights != 0 && response.x > 0. ? u_beam_shape[i].w : 0.);
             float reach_distance = sp_col.w > 0. ? abs(length(reach_delta) - sp_col.w)
                 : length(reach_delta - reach_axis * clamp(dot(reach_delta, reach_axis), -reach_half, reach_half));
             if (reach_distance >= max(max(1., sp_pos.z), response.z)) continue;

@@ -934,7 +934,7 @@ extern "C" const float *rtx_build_occlusion(const float *lights, int count, bool
     float l[16];
     memcpy(l, lights + i * RTX_LIGHT_FLOATS, sizeof l);
     const float *cells = lights + i * RTX_LIGHT_FLOATS + 20;
-    if (cells[3] > 0) {
+    if (l[12] > 0 && cells[3] > 0) {
       if (l[8] * l[8] + l[9] * l[9] <= 0.0001f)
         l[8] = 1, l[9] = 0;
       l[11] += 2 * lights[i * RTX_LIGHT_FLOATS + 18];
@@ -1136,12 +1136,15 @@ extern "C" int rtx_collect_lights(float *out, int capacity) {
     int i = order[n];
     const Light &l = sources[i];
     float illumination = l.illumination * weights[0][i];
+    float reflection = l.reflection * weights[1][i];
     float *packed = out + n * RTX_LIGHT_FLOATS;
     const float head[20] = {l.x, l.y, l.radius, l.height, l.r, l.g, l.b, l.ring, l.dx, l.dy, 0, l.length,
-                            illumination, l.reflection * weights[1][i], l.reflection_reach(), l.width,
+                            illumination, reflection, l.reflection_reach(), l.width,
                             l.tail, (float)l.broad, (float)(l.beam_radius * l.beam_head * SUPPORT), l.smoke_gain};
     memcpy(packed, head, sizeof head);
-    beam_shape(l, illumination, packed + 20);
+    // Keep the beam shape populated while the beam is still reflected so creature highlights do not pop when
+    // illumination drops out; ground passes and occlusion still gate beam mode on illumination > 0.
+    beam_shape(l, illumination > 0 || reflection > 0 ? 1.0f : 0.0f, packed + 20);
   }
   return count;
 }

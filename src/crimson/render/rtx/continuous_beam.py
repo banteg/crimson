@@ -65,12 +65,14 @@ def beam_shape(length: float, radius: float, step: float, head_multiplier: float
     return head_share, stamp_half_width() * head_radius, length * 0.5 + head_radius * SUPPORT
 
 
-def beam_uniform(light: MaterialLight) -> tuple[float, float, float, float]:
+def beam_uniform(light: MaterialLight, *, require_illumination: bool = True) -> tuple[float, float, float, float]:
     """A light's `u_beam_shape`: head share, head half-width, Ion, support half-extent (0 for no beam).
 
-    Unselected lamps stay dark, as do reflection-only sources.
+    Unselected lamps stay dark. With `require_illumination` (ground), reflection-only sources skip the beam pass;
+    creature lighting keeps the shape so specular visibility does not pop when a beam loses its illumination slot.
     """
-    if light.beam_profile is None or light.illumination_gain <= 0:
+    active = light.illumination_gain > 0 if require_illumination else (light.illumination_gain > 0 or light.reflection_gain > 0)
+    if light.beam_profile is None or not active:
         return (0.0, 0.0, 0.0, 0.0)
     head_share, head_half_width, support = beam_shape(light.length, *light.beam_profile)
     return (head_share, head_half_width, float(light.beam_ion), support)

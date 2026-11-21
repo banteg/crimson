@@ -1602,7 +1602,7 @@ void wgpu_w2c_host_scene(struct w2c_host *, u32 view, u32 lights, u32 count) {
     ground_dir[i * 4 + 2] = l[17];
     light_tail[i] = l[16];
     memcpy(beam_shape + i * 4, l + 20, 16);
-    beam_lights |= l[23] > 0;
+    beam_lights |= l[12] > 0 && l[23] > 0;
   }
 }
 void wgpu_w2c_host_pressure(struct w2c_host *, u32 fronts, u32 count) {

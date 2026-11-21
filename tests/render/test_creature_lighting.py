@@ -612,3 +612,60 @@ def test_continuous_beam_shadows_follow_beam_centroid_and_head_halo(lit_sprite):
         assert sum(p[0] for p in blocked_halo) < sum(p[0] for p in clear_halo) - .02
     finally:
         occlusion.close()
+
+
+def test_beam_specular_shadow_stays_stable_when_illumination_budget_drops(lit_sprite):
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    # Long beam along +x; creature beside the tail so beamAtReceiver centroid (~x=145) differs from static (~x=235).
+    beam = MaterialLight(
+        Vec2(192, 20), 155, (1.4, .68, .2), height=24, direction=Vec2(1, 0), length=256,
+        source_width=3, illumination_gain=1e-4, reflection_gain=1, reflection_radius=155,
+        reflection_tail=0., beam_profile=(16., 3.1, 1.35),
+    )
+    reflection_only = msgspec.structs.replace(beam, illumination_gain=0.)
+    # Fixed blocker on the static-centroid ray only; losing illumination must not pop specular highlights.
+    far_blocker = BodyVolume(Vec2(190, 31), Vec2(10, 10), 32, 0., owner=Vec2(190, 31))
+    # Fixed blocker on the beamAtReceiver-centroid ray only; specular shadow must hold across illumination=0.
+    near_blocker = BodyVolume(Vec2(105, 42), Vec2(10, 10), 32, 0., owner=Vec2(105, 42))
+    occlusion = ReflectionOcclusion()
+    try:
+        for blocker in (far_blocker, near_blocker):
+            occlusion.upload(build_occlusion_grid([blocker], [beam], width=1024, height=1024))
+            fading = render([beam], occlusion=occlusion, center=Vec2(64, 64))
+            dropped = render([reflection_only], occlusion=occlusion, center=Vec2(64, 64))
+            for a, b in zip(fading, dropped, strict=True):
+                assert a == pytest.approx(b, abs=.002)
+    finally:
+        occlusion.close()
+
+
+def test_beam_shadow_stays_bounded_near_illumination_cutoff(lit_sprite):
+    from crimson.render.rtx.continuous_beam import prepare_beam_lights
+    from crimson.render.rtx.reflection_occlusion import BodyVolume, ReflectionOcclusion, build_occlusion_grid
+
+    render, _ = lit_sprite
+    # 256-unit Ion Rifle beam along +x from x=0 to x=256 (center x=128, head halo to ~272).
+    # Place the creature so one quad corner sits right at the reach boundary (b ~ 185.7 vs R=195) where float32
+    # cancellation in beamFalloffIntegrals can otherwise throw the centroid hundreds of units past the head.
+    beam = MaterialLight(
+        Vec2(128, 100), 195, (.55, .82, 1.45), height=24, direction=Vec2(1, 0), length=256,
+        source_width=3, illumination_gain=6, reflection_gain=1, reflection_radius=195,
+        reflection_tail=0., beam_profile=(35.2, 6.82, 1.05), beam_ion=True,
+    )
+    owner = Vec2(328, 270)
+    cam = Vec2(64, 64) - owner
+    # Blocker far past the beam head (~x=550), which only an out-of-span cancelled centroid could ever cross.
+    bogus_blocker = BodyVolume(Vec2(550, 210), Vec2(40, 40), 40, 0., owner=Vec2(550, 210))
+    occlusion = ReflectionOcclusion()
+    try:
+        clear = render([beam], center=owner, camera=cam)
+        _, grid_lights = prepare_beam_lights([beam])
+        # Ensure the blocker sits in the occlusion grid by giving it a dummy light reach if needed.
+        wide = msgspec.structs.replace(grid_lights[0], radius=500, reflection_radius=500)
+        occlusion.upload(build_occlusion_grid([bogus_blocker], [wide], width=1024, height=1024))
+        actual = render([beam], occlusion=occlusion, center=owner, camera=cam)
+        assert actual == clear
+    finally:
+        occlusion.close()
